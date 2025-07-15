@@ -5,23 +5,22 @@ import matplotlib
 import numpy as np
 from pathlib import Path
 
-# 设置中文字体
+# Set font to avoid unicode minus issues
 matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 def load_raw_data():
-    """加载RawData目录下的所有模型数据"""
+    """Load all model data from RawData directory"""
     with open('RawData/all_models_data.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 def create_import_time_comparison(models_data):
-    """创建导入时间对比图表（对数坐标+缺失标注）"""
+    """Create import time comparison chart (log/linear scale + missing annotation)"""
     models = []
     formats = ['fbx', 'obj', 'glTF', 'glb']
     data_by_format = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
-    # 先筛选出至少有一个格式有import_time_ms的模型
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = any(
             fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]
@@ -31,7 +30,6 @@ def create_import_time_comparison(models_data):
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
             valid_indices.append(idx)
-    # 按照筛选后的模型收集数据
     for fmt in formats:
         for idx in valid_indices:
             model_name = list(models_data.keys())[idx]
@@ -39,10 +37,14 @@ def create_import_time_comparison(models_data):
             if fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]:
                 data_by_format[fmt].append(model_data['formats'][fmt]['import_time_ms'] / 1000)
             else:
-                data_by_format[fmt].append(None)  # 用None标记缺失
+                data_by_format[fmt].append(None)
     fig, ax = plt.subplots(figsize=(12, 8))
     x = np.arange(len(models))
     width = 0.2
+    all_values = []
+    for fmt in formats:
+        all_values += [v for v in data_by_format[fmt] if v is not None and v > 0]
+    use_log = should_use_log_scale(all_values)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = data_by_format[fmt]
@@ -50,24 +52,26 @@ def create_import_time_comparison(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for j, (bar, v) in enumerate(zip(bars, values)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v > 0:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}s', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} s', ha='center', va='bottom', fontsize=8, zorder=3)
     ax.set_xlabel('Model (Face Count)', fontsize=12)
-    ax.set_ylabel('Import Time (seconds, log scale)', fontsize=12)
+    ylabel = 'Import Time (seconds, log scale)' if use_log else 'Import Time (seconds, linear scale)'
+    ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
-    ax.set_yscale('log')
-    ax.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    if use_log:
+        ax.set_yscale('log')
+    ax.annotate(f'Note: y-axis is {"logarithmic" if use_log else "linear"} scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
-    save_plot_as_html(fig, 'Charts/import_time_comparison.html', 'Import Time Comparison', 'Comparison of import times across different 3D file formats (log scale, missing data marked)')
+    save_plot_as_html(fig, 'Charts/import_time_comparison.html', 'Import Time Comparison', 'Comparison of import times across different 3D file formats (log/linear scale, missing data marked)')
 
 def create_size_memory_comparison(models_data):
-    """创建素材大小和内存占用对比图表（对数坐标+缺失标注）"""
+    """Create material size and memory usage comparison chart (log/linear scale + missing annotation)"""
     models = []
     formats = ['fbx', 'obj', 'glTF', 'glb']
     size_before_data = {fmt: [] for fmt in formats}
@@ -75,7 +79,6 @@ def create_size_memory_comparison(models_data):
     memory_data = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
-    # 只保留至少有一个格式有size_before_mb/size_after_mb/peak_memory_mb的模型
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = False
         for fmt in formats:
@@ -103,7 +106,11 @@ def create_size_memory_comparison(models_data):
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 16))
     x = np.arange(len(models))
     width = 0.2
-    # 图1：压缩前大小对比
+    # 1. Size before compression
+    all_values1 = []
+    for fmt in formats:
+        all_values1 += [v for v in size_before_data[fmt] if v is not None and v > 0]
+    use_log1 = should_use_log_scale(all_values1)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = size_before_data[fmt]
@@ -111,17 +118,23 @@ def create_size_memory_comparison(models_data):
         bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}', ha='center', va='bottom', fontsize=8, zorder=3)
-    ax1.set_ylabel('Size (MB, log scale)', fontsize=12)
+                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
+    ylabel1 = 'Size (MB, log scale)' if use_log1 else 'Size (MB, linear scale)'
+    ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('File Size Before Compression', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
     ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
-    ax1.set_yscale('log')
-    # 图2：压缩后大小对比
+    if use_log1:
+        ax1.set_yscale('log')
+    # 2. Size after compression
+    all_values2 = []
+    for fmt in formats:
+        all_values2 += [v for v in size_after_data[fmt] if v is not None and v > 0]
+    use_log2 = should_use_log_scale(all_values2)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = size_after_data[fmt]
@@ -129,17 +142,23 @@ def create_size_memory_comparison(models_data):
         bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}', ha='center', va='bottom', fontsize=8, zorder=3)
-    ax2.set_ylabel('Size (MB, log scale)', fontsize=12)
+                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
+    ylabel2 = 'Size (MB, log scale)' if use_log2 else 'Size (MB, linear scale)'
+    ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('File Size After Compression', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
     ax2.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3, which='both', zorder=1)
-    ax2.set_yscale('log')
-    # 图3：峰值内存占用对比
+    if use_log2:
+        ax2.set_yscale('log')
+    # 3. Peak memory usage
+    all_values3 = []
+    for fmt in formats:
+        all_values3 += [v for v in memory_data[fmt] if v is not None and v > 0]
+    use_log3 = should_use_log_scale(all_values3)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = memory_data[fmt]
@@ -147,31 +166,33 @@ def create_size_memory_comparison(models_data):
         bars = ax3.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax3.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax3.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v is not None and v > 0:
-                ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
     ax3.set_xlabel('Model (Face Count)', fontsize=12)
-    ax3.set_ylabel('Memory (MB, log scale)', fontsize=12)
+    ylabel3 = 'Memory (MB, log scale)' if use_log3 else 'Memory (MB, linear scale)'
+    ax3.set_ylabel(ylabel3, fontsize=12)
     ax3.set_title('Peak Memory Usage', fontsize=14, fontweight='bold')
     ax3.set_xticks(x)
     labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
     ax3.set_xticklabels(labels, rotation=45, ha='right')
     ax3.legend()
     ax3.grid(True, alpha=0.3, which='both', zorder=1)
-    ax3.set_yscale('log')
-    ax3.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    if use_log3:
+        ax3.set_yscale('log')
+    ax3.annotate(f'Note: y-axis is {"logarithmic" if use_log3 else "linear"} scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
-    save_plot_as_html(fig, 'Charts/size_memory_comparison.html', 'File Size and Memory Usage Comparison', 'Comparison of file sizes (before/after compression) and peak memory usage (log scale, missing data marked)')
+    save_plot_as_html(fig, 'Charts/size_memory_comparison.html', 'File Size and Memory Usage Comparison', 'Comparison of file sizes (before/after compression) and peak memory usage (log/linear scale, missing data marked)')
 
 def create_compression_texture_ratio(models_data):
-    """创建压缩率和纹理占比图表（对数坐标+缺失标注）"""
+    """Create compression ratio and texture size proportion chart (log scale + missing annotation)"""
     models = []
     formats = ['fbx', 'obj', 'glTF', 'glb']
     compression_ratio_data = {fmt: [] for fmt in formats}
     texture_ratio_data = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
-    # 只保留至少有一个格式有size_before_mb和size_after_mb的模型
+    # Only keep models that have at least one format with size_before_mb and size_after_mb
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = False
         for fmt in formats:
@@ -192,13 +213,13 @@ def create_compression_texture_ratio(models_data):
                 size_before = fmt_data.get('size_before_mb', None)
                 size_after = fmt_data.get('size_after_mb', None)
                 texture_size = fmt_data.get('texture_size_mb', None)
-                # 计算压缩率
+                # Calculate compression ratio
                 if size_before not in [None, 0] and size_after not in [None, 0]:
                     compression_ratio = (1 - size_after / size_before) * 100
                 else:
                     compression_ratio = None
                 compression_ratio_data[fmt].append(compression_ratio)
-                # 计算纹理占比
+                # Calculate texture ratio
                 if size_before not in [None, 0] and texture_size not in [None, 0]:
                     texture_ratio = (texture_size / size_before) * 100
                 else:
@@ -210,7 +231,11 @@ def create_compression_texture_ratio(models_data):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
     x = np.arange(len(models))
     width = 0.2
-    # 图1：压缩率对比
+    # Figure 1: Compression ratio comparison
+    all_values1 = []
+    for fmt in formats:
+        all_values1 += [v for v in compression_ratio_data[fmt] if v is not None and v > 0]
+    use_log1 = should_use_log_scale(all_values1)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = compression_ratio_data[fmt]
@@ -218,18 +243,24 @@ def create_compression_texture_ratio(models_data):
         bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v > 0:
                 ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=8, zorder=3)
-    ax1.set_ylabel('Compression Ratio (%) (log scale)', fontsize=12)
+    ylabel1 = 'Compression Ratio (%) (log scale)' if use_log1 else 'Compression Ratio (%) (linear scale)'
+    ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('Compression Ratio Comparison', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
     ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
-    ax1.set_yscale('log')
+    if use_log1:
+        ax1.set_yscale('log')
     ax1.set_ylim(bottom=0.1)
-    # 图2：纹理占比对比
+    # Figure 2: Texture size proportion comparison
+    all_values2 = []
+    for fmt in formats:
+        all_values2 += [v for v in texture_ratio_data[fmt] if v is not None and v > 0]
+    use_log2 = should_use_log_scale(all_values2)
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = texture_ratio_data[fmt]
@@ -237,32 +268,34 @@ def create_compression_texture_ratio(models_data):
         bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v > 0:
                 ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=8, zorder=3)
     ax2.set_xlabel('Model (Face Count)', fontsize=12)
-    ax2.set_ylabel('Texture Size Ratio (%) (log scale)', fontsize=12)
+    ylabel2 = 'Texture Size Ratio (%) (log scale)' if use_log2 else 'Texture Size Ratio (%) (linear scale)'
+    ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('Texture Size as Percentage of Total File Size', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
     labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
     ax2.set_xticklabels(labels, rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3, which='both', zorder=1)
-    ax2.set_yscale('log')
+    if use_log2:
+        ax2.set_yscale('log')
     ax2.set_ylim(bottom=0.1)
-    ax2.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    ax2.annotate('Note: y-axis is logarithmic scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/compression_texture_ratio.html', 'Compression Ratio and Texture Size Analysis', 'Analysis of compression efficiency and texture size proportion (log scale, missing data marked)')
 
 def create_gltf_glb_comparison(models_data):
-    """创建glTF vs GLB加载时间和内存对比图表（对数坐标+缺失标注）"""
+    """Create glTF vs GLB load time and memory comparison chart (log scale + missing annotation)"""
     models = []
     formats = ['glTF', 'glb']
     load_time_data = {fmt: [] for fmt in formats}
     load_memory_data = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
-    # 只保留至少有一个格式有load_time_ms/load_memory_mb的模型
+    # Only keep models that have at least one format with load_time_ms/load_memory_mb
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = False
         for fmt in formats:
@@ -290,7 +323,11 @@ def create_gltf_glb_comparison(models_data):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
     x = np.arange(len(models))
     width = 0.35
-    # 图1：加载时间对比
+    # Figure 1: Load time comparison
+    all_values1 = []
+    for fmt in formats:
+        all_values1 += [v for v in load_time_data[fmt] if v is not None and v > 0]
+    use_log1 = should_use_log_scale(all_values1)
     for i, fmt in enumerate(formats):
         offset = (i - 0.5) * width
         values = load_time_data[fmt]
@@ -298,20 +335,26 @@ def create_gltf_glb_comparison(models_data):
         bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=10, color='red', rotation=90, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=10, color='red', rotation=90, zorder=3)
             elif v > 0:
                 ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}s', ha='center', va='bottom', fontsize=10, zorder=3)
     ax1.set_xlabel('Model (Face Count)', fontsize=12)
-    ax1.set_ylabel('Load Time (seconds, log scale)', fontsize=12)
+    ylabel1 = 'Load Time (seconds, log scale)' if use_log1 else 'Load Time (seconds, linear scale)'
+    ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('glTF vs GLB: Load Time Comparison', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
     labels = [f'{model.split("_")[0]}\n({face}k)' for model, face in zip(models, face_counts)]
     ax1.set_xticklabels(labels, rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
-    ax1.set_yscale('log')
-    ax1.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
-    # 图2：内存占用对比
+    if use_log1:
+        ax1.set_yscale('log')
+    ax1.annotate('Note: y-axis is logarithmic scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    # Figure 2: Memory usage comparison
+    all_values2 = []
+    for fmt in formats:
+        all_values2 += [v for v in load_memory_data[fmt] if v is not None and v > 0]
+    use_log2 = should_use_log_scale(all_values2)
     for i, fmt in enumerate(formats):
         offset = (i - 0.5) * width
         values = load_memory_data[fmt]
@@ -319,34 +362,36 @@ def create_gltf_glb_comparison(models_data):
         bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=10, color='red', rotation=90, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=10, color='red', rotation=90, zorder=3)
             elif v is not None and v > 0:
                 ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}MB', ha='center', va='bottom', fontsize=10, zorder=3)
     ax2.set_xlabel('Model (Face Count)', fontsize=12)
-    ax2.set_ylabel('Memory Usage (MB, log scale)', fontsize=12)
+    ylabel2 = 'Memory Usage (MB, log scale)' if use_log2 else 'Memory Usage (MB, linear scale)'
+    ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('glTF vs GLB: Memory Usage Comparison', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels, rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3, which='both', zorder=1)
-    ax2.set_yscale('log')
-    ax2.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    if use_log2:
+        ax2.set_yscale('log')
+    ax2.annotate('Note: y-axis is logarithmic scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/gltf_glb_comparison.html', 'glTF vs GLB Performance Comparison', 'Comparison of load time and memory usage between glTF and GLB formats (log scale, missing data marked)')
 
 def save_plot_as_html(fig, filepath, title, description):
-    """将matplotlib图表保存为HTML文件"""
+    """Save matplotlib chart as an HTML file"""
     from io import BytesIO
     import base64
     
-    # 保存图表为base64编码的图片
+    # Save chart as base64 encoded image
     buffer = BytesIO()
     fig.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
     buffer.seek(0)
     image_base64 = base64.b64encode(buffer.getvalue()).decode()
     plt.close(fig)
     
-    # 创建HTML内容
+    # Create HTML content
     html_content = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -412,17 +457,17 @@ def save_plot_as_html(fig, filepath, title, description):
 </html>
 """
     
-    # 确保Charts目录存在
+    # Ensure Charts directory exists
     os.makedirs('Charts', exist_ok=True)
     
-    # 保存HTML文件
+    # Save HTML file
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(html_content)
     
-    print(f"已生成报告: {filepath}")
+    print(f"Report generated: {filepath}")
 
 def create_summary_report(models_data):
-    """创建汇总报告"""
+    """Create summary report"""
     html_content = """
 <!DOCTYPE html>
 <html lang="en">
@@ -523,8 +568,7 @@ def create_summary_report(models_data):
             </thead>
             <tbody>
 """
-    
-    # 添加模型信息
+    # Add model information
     for model_name, model_data in models_data.items():
         formats = ', '.join(model_data['formats'].keys())
         html_content += f"""
@@ -535,7 +579,6 @@ def create_summary_report(models_data):
                     <td>{formats}</td>
                 </tr>
 """
-    
     html_content += """
             </tbody>
         </table>
@@ -547,37 +590,52 @@ def create_summary_report(models_data):
                 <p>Compare import times across FBX, OBJ, glTF, and GLB formats for different models.</p>
                 <a href="import_time_comparison.html">View Report</a>
             </div>
-            
             <div class="report-card">
                 <h3>Size & Memory Analysis</h3>
                 <p>Analyze file sizes (before/after compression) and peak memory usage for each format.</p>
                 <a href="size_memory_comparison.html">View Report</a>
             </div>
-            
             <div class="report-card">
                 <h3>Compression & Texture Analysis</h3>
                 <p>Examine compression ratios and texture size proportions across different formats.</p>
                 <a href="compression_texture_ratio.html">View Report</a>
             </div>
-            
             <div class="report-card">
                 <h3>glTF vs GLB Performance</h3>
                 <p>Direct comparison of load times and memory usage between glTF and GLB formats.</p>
                 <a href="gltf_glb_comparison.html">View Report</a>
+            </div>
+            <div class="report-card">
+                <h3>Per-Format Statistics</h3>
+                <p>Detailed statistics for each format: size before/after compression, compression ratio, texture ratio.</p>
+                <ul>
+                    <li><a href="per_format_fbx.html">FBX Stats</a></li>
+                    <li><a href="per_format_obj.html">OBJ Stats</a></li>
+                    <li><a href="per_format_glTF.html">glTF Stats</a></li>
+                    <li><a href="per_format_glb.html">GLB Stats</a></li>
+                </ul>
+            </div>
+            <div class="report-card">
+                <h3>All-Format Size Before Compression</h3>
+                <p>Compare size before compression across all formats for each model.</p>
+                <a href="all_format_size_before.html">View Report</a>
+            </div>
+            <div class="report-card">
+                <h3>All-Format Size After Compression</h3>
+                <p>Compare size after compression across all formats for each model.</p>
+                <a href="all_format_size_after.html">View Report</a>
             </div>
         </div>
     </div>
 </body>
 </html>
 """
-    
-    # 保存汇总报告
+    # Save summary report
     with open('Charts/index.html', 'w', encoding='utf-8') as f:
         f.write(html_content)
-    
-    print("已生成汇总报告: Charts/index.html")
+    print("Summary report generated: Charts/index.html")
 
-# 新增：每格式一张，横轴为模型，柱子为压缩前大小、压缩后大小、压缩比、纹理占比
+# New: One chart per format, horizontal axis is model, bars are size before compression, size after compression, compression ratio, texture ratio
 def create_per_format_stats(models_data):
     formats = ['fbx', 'obj', 'glTF', 'glb']
     for fmt in formats:
@@ -611,30 +669,36 @@ def create_per_format_stats(models_data):
         x = np.arange(len(models))
         width = 0.18
         fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
-        bars1 = ax.bar(x - 1.5*width, [v if v not in [None, 0] else 0 for v in size_before], width, label='压缩前(MB)', zorder=2)
-        bars2 = ax.bar(x - 0.5*width, [v if v not in [None, 0] else 0 for v in size_after], width, label='压缩后(MB)', zorder=2)
-        bars3 = ax.bar(x + 0.5*width, [v if v not in [None, 0] else 0 for v in compression_ratio], width, label='压缩率(%)', zorder=2)
-        bars4 = ax.bar(x + 1.5*width, [v if v not in [None, 0] else 0 for v in texture_ratio], width, label='纹理占比(%)', zorder=2)
-        for bars, values in zip([bars1, bars2, bars3, bars4], [size_before, size_after, compression_ratio, texture_ratio]):
+        all_values = []
+        for arr in [size_before, size_after, compression_ratio, texture_ratio]:
+            all_values += [v for v in arr if v not in [None, 0]]
+        use_log = should_use_log_scale(all_values)
+        bars1 = ax.bar(x - 1.5*width, [v if v not in [None, 0] else 0 for v in size_before], width, label='Size Before (MB)', zorder=2)
+        bars2 = ax.bar(x - 0.5*width, [v if v not in [None, 0] else 0 for v in size_after], width, label='Size After (MB)', zorder=2)
+        bars3 = ax.bar(x + 0.5*width, [v if v not in [None, 0] else 0 for v in compression_ratio], width, label='Compression Ratio (%)', zorder=2)
+        bars4 = ax.bar(x + 1.5*width, [v if v not in [None, 0] else 0 for v in texture_ratio], width, label='Texture Ratio (%)', zorder=2)
+        for bars, values, unit in zip([bars1, bars2, bars3, bars4], [size_before, size_after, compression_ratio, texture_ratio], ['MB', 'MB', '%', '%']):
             for bar, v in zip(bars, values):
                 if v is None:
-                    ax.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                    ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
                 elif v not in [None, 0]:
-                    ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
-        ax.set_xlabel('模型 (面数/纹理数)', fontsize=12)
-        ax.set_ylabel('数值 (对数坐标)', fontsize=12)
-        ax.set_title(f'{fmt.upper()} 各项统计', fontsize=16, fontweight='bold')
+                    ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} {unit}', ha='center', va='bottom', fontsize=8, zorder=3)
+        ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+        ylabel = 'Value (log scale)' if use_log else 'Value (linear scale)'
+        ax.set_ylabel(ylabel, fontsize=12)
+        ax.set_title(f'{fmt.upper()} Stats', fontsize=16, fontweight='bold')
         ax.set_xticks(x)
         labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
         ax.set_xticklabels(labels, rotation=45, ha='right')
         ax.legend()
         ax.grid(True, alpha=0.3, which='both', zorder=1)
-        ax.set_yscale('log')
-        ax.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+        if use_log:
+            ax.set_yscale('log')
+        ax.annotate(f'Note: y-axis is {"logarithmic" if use_log else "linear"} scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
         plt.tight_layout()
-        save_plot_as_html(fig, f'Charts/per_format_{fmt}.html', f'{fmt.upper()} 各项统计', f'每个模型的压缩前/后大小、压缩率、纹理占比（对数坐标，缺失标注）')
+        save_plot_as_html(fig, f'Charts/per_format_{fmt}.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for each model (log/linear scale, missing data marked)')
 
-# 新增：横轴为模型，柱子为各格式压缩前大小
+# New: Horizontal axis is model, bars are size before compression for all formats
 def create_all_format_size_before(models_data):
     formats = ['fbx', 'obj', 'glTF', 'glb']
     models = []
@@ -656,6 +720,10 @@ def create_all_format_size_before(models_data):
     x = np.arange(len(models))
     width = 0.18
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    all_values = []
+    for fmt in formats:
+        all_values += [v for v in data[fmt] if v not in [None, 0]]
+    use_log = should_use_log_scale(all_values)
     for i, fmt in enumerate(formats):
         offset = (i - 1.5) * width
         values = data[fmt]
@@ -663,23 +731,25 @@ def create_all_format_size_before(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v not in [None, 0]:
                 ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
-    ax.set_xlabel('模型 (面数/纹理数)', fontsize=12)
-    ax.set_ylabel('压缩前大小 (MB, 对数坐标)', fontsize=12)
-    ax.set_title('各格式压缩前大小对比', fontsize=16, fontweight='bold')
+    ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+    ylabel = 'Size Before Compression (MB, log scale)' if use_log else 'Size Before Compression (MB, linear scale)'
+    ax.set_ylabel(ylabel, fontsize=12)
+    ax.set_title('Size Before Compression Comparison Across Formats', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
-    ax.set_yscale('log')
-    ax.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    if use_log:
+        ax.set_yscale('log')
+    ax.annotate('Note: y-axis is logarithmic scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
-    save_plot_as_html(fig, 'Charts/all_format_size_before.html', '各格式压缩前大小对比', '各格式压缩前大小对比（对数坐标，缺失标注）')
+    save_plot_as_html(fig, 'Charts/all_format_size_before.html', 'Size Before Compression Comparison Across Formats', 'Size before compression comparison across different formats (log scale, missing data marked)')
 
-# 新增：横轴为模型，柱子为各格式压缩后大小
+# New: Horizontal axis is model, bars are size after compression for all formats
 def create_all_format_size_after(models_data):
     formats = ['fbx', 'obj', 'glTF', 'glb']
     models = []
@@ -701,6 +771,10 @@ def create_all_format_size_after(models_data):
     x = np.arange(len(models))
     width = 0.18
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    all_values = []
+    for fmt in formats:
+        all_values += [v for v in data[fmt] if v not in [None, 0]]
+    use_log = should_use_log_scale(all_values)
     for i, fmt in enumerate(formats):
         offset = (i - 1.5) * width
         values = data[fmt]
@@ -708,57 +782,69 @@ def create_all_format_size_after(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
             elif v not in [None, 0]:
                 ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
-    ax.set_xlabel('模型 (面数/纹理数)', fontsize=12)
-    ax.set_ylabel('压缩后大小 (MB, 对数坐标)', fontsize=12)
-    ax.set_title('各格式压缩后大小对比', fontsize=16, fontweight='bold')
+    ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+    ylabel = 'Size After Compression (MB, log scale)' if use_log else 'Size After Compression (MB, linear scale)'
+    ax.set_ylabel(ylabel, fontsize=12)
+    ax.set_title('Size After Compression Comparison Across Formats', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
-    ax.set_yscale('log')
-    ax.annotate('注：y轴为对数坐标，缺失数据以红字标注', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    if use_log:
+        ax.set_yscale('log')
+    ax.annotate('Note: y-axis is logarithmic scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
     plt.tight_layout()
-    save_plot_as_html(fig, 'Charts/all_format_size_after.html', '各格式压缩后大小对比', '各格式压缩后大小对比（对数坐标，缺失标注）')
+    save_plot_as_html(fig, 'Charts/all_format_size_after.html', 'Size After Compression Comparison Across Formats', 'Size after compression comparison across different formats (log scale, missing data marked)')
+
+# Utility function to determine if log scale is needed
+def should_use_log_scale(values):
+    # Filter out None and non-positive values
+    filtered = [v for v in values if v is not None and v > 0]
+    if not filtered or len(filtered) < 2:
+        return False
+    min_v = min(filtered)
+    max_v = max(filtered)
+    return max_v / min_v > 10
 
 def main():
-    """主函数"""
-    print("开始生成统计报告...")
+    """Main function"""
+    print("Starting to generate statistical reports...")
     
-    # 加载原始数据
+    # Load raw data
     models_data = load_raw_data()
-    print(f"已加载 {len(models_data)} 个模型的数据")
+    print(f"Loaded data for {len(models_data)} models")
     
-    # 生成各种报告
-    print("\n生成导入时间对比报告...")
+    # Generate various reports
+    print("\nGenerating import time comparison report...")
     create_import_time_comparison(models_data)
     
-    print("\n生成大小和内存对比报告...")
+    print("\nGenerating size and memory comparison report...")
     create_size_memory_comparison(models_data)
     
-    print("\n生成压缩率和纹理占比报告...")
+    print("\nGenerating compression and texture ratio report...")
     create_compression_texture_ratio(models_data)
     
-    print("\n生成glTF vs GLB对比报告...")
+    print("\nGenerating glTF vs GLB comparison report...")
     create_gltf_glb_comparison(models_data)
     
-    print("\n生成每格式统计报告...")
+    print("\nGenerating per-format stats report...")
     create_per_format_stats(models_data)
     
-    print("\n生成各格式压缩前大小对比报告...")
+    print("\nGenerating all-format size before comparison report...")
     create_all_format_size_before(models_data)
     
-    print("\n生成各格式压缩后大小对比报告...")
+    print("\nGenerating all-format size after comparison report...")
     create_all_format_size_after(models_data)
     
-    print("\n生成汇总报告...")
+    print("\nGenerating summary report...")
     create_summary_report(models_data)
     
-    print("\n所有报告已生成完成！请查看 Charts 目录下的 HTML 文件。")
-    print("打开 Charts/index.html 查看汇总报告。")
+    print("\nAll reports generated! Please check the HTML files in the Charts directory.")
+    print("Open Charts/index.html to view the summary report.")
 
 if __name__ == '__main__':
     main()
