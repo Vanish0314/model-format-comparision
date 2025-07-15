@@ -1,0 +1,33 @@
+{
+  "total_models_with_memory_data": 20,
+  "formats": {
+    "fbx": {
+      "count": 5,
+      "avg_memory": 629.0,
+      "min_memory": 45.0,
+      "max_memory": 1850.0,
+      "median_memory": 180.0
+    },
+    "obj": {
+      "count": 5,
+      "avg_memory": 671.0,
+      "min_memory": 35.0,
+      "max_memory": 2100.0,
+      "median_memory": 220.0
+    },
+    "gltf": {
+      "count": 5,
+      "avg_memory": 526.0,
+      "min_memory": 30.0,
+      "max_memory": 1600.0,
+      "median_memory": 170.0
+    },
+    "glb": {
+      "count": 5,
+      "avg_memory": 509.6,
+      "min_memory": 28.0,
+      "max_memory": 1550.0,
+      "median_memory": 165.0
+    }
+  }
+}

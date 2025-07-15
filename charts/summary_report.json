@@ -1,30 +1,66 @@
 {
   "fbx": {
+    "format": "fbx",
+    "count": 5,
     "avg_original_size": 335.29,
     "avg_compressed_size": 190.706,
     "avg_compression_ratio": 27.388918231130855,
     "avg_texture_percentage": 51.514100461207114,
-    "count": 5
+    "min_original_size": 2.15,
+    "max_original_size": 1037.0,
+    "min_compressed_size": 1.78,
+    "max_compressed_size": 587.0,
+    "avg_peak_memory": 629.0,
+    "min_peak_memory": 45.0,
+    "max_peak_memory": 1850.0,
+    "memory_data_count": 5
   },
-  "obj": {
-    "avg_original_size": 382.906,
-    "avg_compressed_size": 205.76399999999998,
-    "avg_compression_ratio": 55.20955837162482,
-    "avg_texture_percentage": 38.71994971381771,
-    "count": 5
+  "glb": {
+    "format": "glb",
+    "count": 5,
+    "avg_original_size": 294.342,
+    "avg_compressed_size": 264.082,
+    "avg_compression_ratio": 32.2036497439313,
+    "avg_texture_percentage": 48.651531387847065,
+    "min_original_size": 1.61,
+    "max_original_size": 941.0,
+    "min_compressed_size": 0.98,
+    "max_compressed_size": 865.0,
+    "avg_peak_memory": 509.6,
+    "min_peak_memory": 28.0,
+    "max_peak_memory": 1550.0,
+    "memory_data_count": 5
   },
   "gltf": {
+    "format": "gltf",
+    "count": 5,
     "avg_original_size": 294.586,
     "avg_compressed_size": 264.12,
     "avg_compression_ratio": 32.25891887708313,
     "avg_texture_percentage": 48.6320561189294,
-    "count": 5
+    "min_original_size": 1.63,
+    "max_original_size": 942.0,
+    "min_compressed_size": 0.98,
+    "max_compressed_size": 865.0,
+    "avg_peak_memory": 526.0,
+    "min_peak_memory": 30.0,
+    "max_peak_memory": 1600.0,
+    "memory_data_count": 5
   },
-  "glb": {
-    "avg_original_size": 294.342,
-    "avg_compressed_size": 264.082,
-    "avg_compression_ratio": 32.2036497439313,
-    "avg_texture_percentage": 48.65153138784707,
-    "count": 5
+  "obj": {
+    "format": "obj",
+    "count": 5,
+    "avg_original_size": 382.906,
+    "avg_compressed_size": 205.764,
+    "avg_compression_ratio": 55.20955837162483,
+    "avg_texture_percentage": 38.719949713817705,
+    "min_original_size": 3.13,
+    "max_original_size": 1220.0,
+    "min_compressed_size": 0.95,
+    "max_compressed_size": 551.0,
+    "avg_peak_memory": 671.0,
+    "min_peak_memory": 35.0,
+    "max_peak_memory": 2100.0,
+    "memory_data_count": 5
   }
 }
