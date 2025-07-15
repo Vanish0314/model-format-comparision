@@ -26,7 +26,7 @@ class ModelDataAnalyzer:
         """初始化分析器"""
         self.csv_path = csv_path
         self.data = None
-        self.charts_dir = Path("../charts")
+        self.charts_dir = Path("charts")
         self.charts_dir.mkdir(exist_ok=True)
         self.load_data()
     
