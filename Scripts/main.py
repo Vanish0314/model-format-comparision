@@ -56,6 +56,12 @@ def create_import_time_comparison(models_data):
     models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
         data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
+    # 记录原始 None 信息用于后续标注
+    missing_mask = {fmt: [v is None for v in data_by_format[fmt]] for fmt in formats}
+    # 替换 None 为 0 以避免 bar 报错
+    for fmt in formats:
+        data_by_format[fmt] = [v if v is not None else 0 for v in data_by_format[fmt]]
+    import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(12, 8))
     x = np.arange(len(models))
     width = 0.2
@@ -66,20 +72,20 @@ def create_import_time_comparison(models_data):
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         bars = ax.bar(x + offset, data_by_format[fmt], width, label=fmt)
-        
-        # 添加数值标签
-        for bar in bars:
+        # 添加数值标签和缺失标注
+        for j, bar in enumerate(bars):
             height = bar.get_height()
-            if height > 0:
+            if missing_mask[fmt][j]:
+                # 标注缺失
+                ax.text(bar.get_x() + bar.get_width()/2., 0.05, '缺失', ha='center', va='bottom', fontsize=8, color='red', rotation=90)
+            elif height > 0:
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                        f'{height:.1f}s', ha='center', va='bottom', fontsize=8)
-    
     # 设置图表属性
     ax.set_xlabel('Model (Face/Texture)', fontsize=12)
     ax.set_ylabel('Import Time (seconds)', fontsize=12)
     ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    
     # 设置x轴标签，包含面数信息
     labels = [f'{model.split("_")[0]}\n({face}k/{tex})' for model, face, tex in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
