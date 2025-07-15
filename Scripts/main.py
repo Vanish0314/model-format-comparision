@@ -22,10 +22,12 @@ def create_import_time_comparison(models_data):
     # 准备数据
     data_by_format = {fmt: [] for fmt in formats}
     face_counts = []
+    texture_counts = []
     
     for model_name, model_data in models_data.items():
         models.append(model_name)
         face_counts.append(model_data['face_count_k'])
+        texture_counts.append(model_data.get('texture_count', 0))
         
         for fmt in formats:
             if fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]:
@@ -51,13 +53,13 @@ def create_import_time_comparison(models_data):
                        f'{height:.1f}s', ha='center', va='bottom', fontsize=8)
     
     # 设置图表属性
-    ax.set_xlabel('Model (Face Count)', fontsize=12)
+    ax.set_xlabel('Model (Face/Texture)', fontsize=12)
     ax.set_ylabel('Import Time (seconds)', fontsize=12)
     ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     
     # 设置x轴标签，包含面数信息
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [f'{model.split("_")[0]}\n({face}k/{tex})' for model, face, tex in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     
     ax.legend()
@@ -71,20 +73,20 @@ def create_import_time_comparison(models_data):
                       'Comparison of import times across different 3D file formats')
 
 def create_size_memory_comparison(models_data):
-    """创建素材大小和内存占用对比图表"""
+    """创建素材大小和内存占用对比图表（压缩前/后合并为一张）"""
+    import colorsys
     models = []
     formats = ['fbx', 'obj', 'glTF', 'glb']
-    
-    # 准备数据
+    face_counts = []
+    texture_counts = []
     size_before_data = {fmt: [] for fmt in formats}
     size_after_data = {fmt: [] for fmt in formats}
     memory_data = {fmt: [] for fmt in formats}
-    face_counts = []
-    
+
     for model_name, model_data in models_data.items():
         models.append(model_name)
         face_counts.append(model_data['face_count_k'])
-        
+        texture_counts.append(model_data.get('texture_count', 0))
         for fmt in formats:
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
@@ -95,71 +97,87 @@ def create_size_memory_comparison(models_data):
                 size_before_data[fmt].append(0)
                 size_after_data[fmt].append(0)
                 memory_data[fmt].append(0)
-    
-    # 创建三个子图
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 16))
-    
+
     x = np.arange(len(models))
-    width = 0.2
-    
-    # 图1：压缩前大小对比
+    width = 0.18
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
+
+    # 生成同色系配色
+    base_colors = plt.cm.Set2(np.linspace(0, 1, len(formats)))
+    before_colors = []
+    after_colors = []
+    for c in base_colors:
+        h, l, s = colorsys.rgb_to_hls(*c[:3])
+        before_colors.append(colorsys.hls_to_rgb(h, min(1, l*1.15), min(1, s*0.9)))
+        after_colors.append(colorsys.hls_to_rgb(h, l*0.7, s*0.7))
+
+    # 合并压缩前/后柱状图
+    bar_handles = []
     for i, fmt in enumerate(formats):
-        offset = (i - len(formats)/2 + 0.5) * width
-        bars = ax1.bar(x + offset, size_before_data[fmt], width, label=fmt)
-        
-        for bar, value in zip(bars, size_before_data[fmt]):
+        offset = (i - len(formats)/2 + 0.5) * (width*2)
+        bars_before = ax1.bar(x + offset - width/2, size_before_data[fmt], width, label=f'{fmt} Before', color=before_colors[i])
+        bars_after = ax1.bar(x + offset + width/2, size_after_data[fmt], width, label=f'{fmt} After', color=after_colors[i])
+        bar_handles.append((bars_before, bars_after))
+        # 数值标注，避免重叠
+        max_height = 0
+        for fmt in formats:
+            max_height = max(max_height, max(size_before_data[fmt]+size_after_data[fmt] or [0]))
+        for bar, value in zip(bars_before, size_before_data[fmt]):
             if value > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                        f'{value:.0f}', ha='center', va='bottom', fontsize=8)
-    
+                if bar.get_height() < max_height * 0.1:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
+                            f'{value:.0f}', ha='center', va='center', fontsize=8, color='white')
+                else:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_height*0.01,
+                            f'{value:.0f}', ha='center', va='bottom', fontsize=8, color=before_colors[i])
+        for bar, value in zip(bars_after, size_after_data[fmt]):
+            if value > 0:
+                if bar.get_height() < max_height * 0.1:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
+                            f'{value:.0f}', ha='center', va='center', fontsize=8, color='white')
+                else:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_height*0.01,
+                            f'{value:.0f}', ha='center', va='bottom', fontsize=8, color=after_colors[i])
+
     ax1.set_ylabel('Size (MB)', fontsize=12)
-    ax1.set_title('File Size Before Compression', fontsize=14, fontweight='bold')
+    ax1.set_title('File Size Before/After Compression', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
-    ax1.legend()
+    # 统一横轴命名格式
+    labels = [f'{model.split("_")[0]}\n({face}k/{tex})' for model, face, tex in zip(models, face_counts, texture_counts)]
+    ax1.set_xticklabels(labels, rotation=45, ha='right')
+    # 自定义图例
+    legend_patches = []
+    for i, fmt in enumerate(formats):
+        legend_patches.append(matplotlib.patches.Patch(color=before_colors[i], label=f'{fmt} Before'))
+        legend_patches.append(matplotlib.patches.Patch(color=after_colors[i], label=f'{fmt} After'))
+    ax1.legend(handles=legend_patches, ncol=2)
     ax1.grid(True, alpha=0.3)
-    
-    # 图2：压缩后大小对比
+
+    # 内存占用图
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
-        bars = ax2.bar(x + offset, size_after_data[fmt], width, label=fmt)
-        
-        for bar, value in zip(bars, size_after_data[fmt]):
-            if value > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                        f'{value:.0f}', ha='center', va='bottom', fontsize=8)
-    
-    ax2.set_ylabel('Size (MB)', fontsize=12)
-    ax2.set_title('File Size After Compression', fontsize=14, fontweight='bold')
-    ax2.set_xticks(x)
-    ax2.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    
-    # 图3：峰值内存占用对比
-    for i, fmt in enumerate(formats):
-        offset = (i - len(formats)/2 + 0.5) * width
-        bars = ax3.bar(x + offset, memory_data[fmt], width, label=fmt)
-        
+        bars = ax2.bar(x + offset, memory_data[fmt], width, label=fmt, color=base_colors[i])
+        # 数值标注，避免重叠
+        max_mem = 0
+        for fmt in formats:
+            max_mem = max(max_mem, max(memory_data[fmt] or [0]))
         for bar, value in zip(bars, memory_data[fmt]):
             if value > 0:
-                ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                        f'{value:.0f}', ha='center', va='bottom', fontsize=8)
-    
-    ax3.set_xlabel('Model (Face Count)', fontsize=12)
-    ax3.set_ylabel('Memory (MB)', fontsize=12)
-    ax3.set_title('Peak Memory Usage', fontsize=14, fontweight='bold')
-    ax3.set_xticks(x)
-    
-    # 设置x轴标签，包含面数信息
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
-    ax3.set_xticklabels(labels, rotation=45, ha='right')
-    ax3.legend()
-    ax3.grid(True, alpha=0.3)
-    
+                if bar.get_height() < max_mem * 0.1:
+                    ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
+                            f'{value:.0f}', ha='center', va='center', fontsize=8, color='white')
+                else:
+                    ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_mem*0.01,
+                            f'{value:.0f}', ha='center', va='bottom', fontsize=8, color=base_colors[i])
+    ax2.set_xlabel('Model (Face/Texture)', fontsize=12)
+    ax2.set_ylabel('Memory (MB)', fontsize=12)
+    ax2.set_title('Peak Memory Usage', fontsize=14, fontweight='bold')
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(labels, rotation=45, ha='right')
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+
     plt.tight_layout()
-    
-    # 保存为HTML
     save_plot_as_html(fig, 'Charts/size_memory_comparison.html',
                       'File Size and Memory Usage Comparison',
                       'Comparison of file sizes (before/after compression) and peak memory usage')
@@ -173,10 +191,12 @@ def create_compression_texture_ratio(models_data):
     compression_ratio_data = {fmt: [] for fmt in formats}
     texture_ratio_data = {fmt: [] for fmt in formats}
     face_counts = []
+    texture_counts = []
     
     for model_name, model_data in models_data.items():
         models.append(model_name)
         face_counts.append(model_data['face_count_k'])
+        texture_counts.append(model_data.get('texture_count', 0))
         
         for fmt in formats:
             if fmt in model_data['formats']:
@@ -213,15 +233,24 @@ def create_compression_texture_ratio(models_data):
         offset = (i - len(formats)/2 + 0.5) * width
         bars = ax1.bar(x + offset, compression_ratio_data[fmt], width, label=fmt)
         
+        # 添加数值标签
+        max_comp = 0
+        for fmt in formats:
+            max_comp = max(max_comp, max(compression_ratio_data[fmt] or [0]))
         for bar, value in zip(bars, compression_ratio_data[fmt]):
             if value > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                        f'{value:.1f}%', ha='center', va='bottom', fontsize=8)
+                if bar.get_height() < max_comp * 0.1:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
+                            f'{value:.1f}%', ha='center', va='center', fontsize=8, color='white')
+                else:
+                    ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_comp*0.01,
+                            f'{value:.1f}%', ha='center', va='bottom', fontsize=8)
     
     ax1.set_ylabel('Compression Ratio (%)', fontsize=12)
     ax1.set_title('Compression Ratio Comparison', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
+    labels = [f'{model.split("_")[0]}\n({face}k/{tex})' for model, face, tex in zip(models, face_counts, texture_counts)]
+    ax1.set_xticklabels(labels, rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     ax1.set_ylim(0, 100)
@@ -231,18 +260,26 @@ def create_compression_texture_ratio(models_data):
         offset = (i - len(formats)/2 + 0.5) * width
         bars = ax2.bar(x + offset, texture_ratio_data[fmt], width, label=fmt)
         
+        # 添加数值标签
+        max_tex = 0
+        for fmt in formats:
+            max_tex = max(max_tex, max(texture_ratio_data[fmt] or [0]))
         for bar, value in zip(bars, texture_ratio_data[fmt]):
             if value > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(),
-                        f'{value:.1f}%', ha='center', va='bottom', fontsize=8)
+                if bar.get_height() < max_tex * 0.1:
+                    ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2,
+                            f'{value:.1f}%', ha='center', va='center', fontsize=8, color='white')
+                else:
+                    ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_tex*0.01,
+                            f'{value:.1f}%', ha='center', va='bottom', fontsize=8)
     
-    ax2.set_xlabel('Model (Face Count)', fontsize=12)
+    ax2.set_xlabel('Model (Face/Texture)', fontsize=12)
     ax2.set_ylabel('Texture Size Ratio (%)', fontsize=12)
     ax2.set_title('Texture Size as Percentage of Total File Size', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
     
     # 设置x轴标签，包含面数信息
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [f'{model.split("_")[0]}\n({face}k/{tex})' for model, face, tex in zip(models, face_counts, texture_counts)]
     ax2.set_xticklabels(labels, rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3)
@@ -602,3 +639,42 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+def plot_dual_axis_bar(ax, x, left_data, right_data, left_label, right_label, left_color, right_color, bar_width=0.35, left_fmt='{:.0f}', right_fmt='{:.1f}%'):
+    """在ax上绘制双y轴柱状图，左轴为left_data，右轴为right_data"""
+    ax2 = ax.twinx()
+    bars1 = ax.bar(x - bar_width/2, left_data, bar_width, label=left_label, color=left_color)
+    bars2 = ax2.bar(x + bar_width/2, right_data, bar_width, label=right_label, color=right_color, alpha=0.7)
+    # 标注
+    max_left = max(left_data or [0])
+    max_right = max(right_data or [0])
+    for bar, value in zip(bars1, left_data):
+        if value > 0:
+            if bar.get_height() < max_left * 0.1:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2, left_fmt.format(value),
+                        ha='center', va='center', fontsize=8, color='white')
+            else:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_left*0.01, left_fmt.format(value),
+                        ha='center', va='bottom', fontsize=8, color=left_color)
+    for bar, value in zip(bars2, right_data):
+        if value > 0:
+            if bar.get_height() < max_right * 0.1:
+                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()/2, right_fmt.format(value),
+                         ha='center', va='center', fontsize=8, color='white')
+            else:
+                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height()+max_right*0.01, right_fmt.format(value),
+                         ha='center', va='bottom', fontsize=8, color=right_color)
+    ax.set_ylabel(left_label)
+    ax2.set_ylabel(right_label)
+    # 图例合并
+    handles1, labels1 = ax.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    ax.legend(handles1+handles2, labels1+labels2, loc='upper right')
+    return ax, ax2
+
+# 用法示例（注释）：
+# fig, ax = plt.subplots()
+# plot_dual_axis_bar(ax, x, mb_data, percent_data, 'Size (MB)', 'Ratio (%)', 'tab:blue', 'tab:orange')
+# ax.set_xticks(x)
+# ax.set_xticklabels(labels)
+# plt.tight_layout()
