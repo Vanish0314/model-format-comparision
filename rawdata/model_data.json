@@ -1,0 +1,137 @@
+[
+  {
+    "model_name": "BistroExterior_2832k_405tex",
+    "face_count": 2832000,
+    "texture_count": 405,
+    "formats": {
+      "fbx": {
+        "original_size_mb": 1037.0,
+        "compressed_size_mb": 587.0,
+        "texture_size_mb": 925.0
+      },
+      "obj": {
+        "original_size_mb": 1220.0,
+        "compressed_size_mb": 551.0,
+        "texture_size_mb": 925.0
+      },
+      "gltf": {
+        "original_size_mb": 942.0,
+        "compressed_size_mb": 865.0,
+        "texture_size_mb": 815.0
+      },
+      "glb": {
+        "original_size_mb": 941.0,
+        "compressed_size_mb": 865.0,
+        "texture_size_mb": 815.0
+      }
+    }
+  },
+  {
+    "model_name": "BistroInterior_1293k_201tex",
+    "face_count": 1293000,
+    "texture_count": 201,
+    "formats": {
+      "fbx": {
+        "original_size_mb": 533.0,
+        "compressed_size_mb": 268.0,
+        "texture_size_mb": 488.0
+      },
+      "obj": {
+        "original_size_mb": 489.0,
+        "compressed_size_mb": 384.0,
+        "texture_size_mb": 357.0
+      },
+      "gltf": {
+        "original_size_mb": 402.0,
+        "compressed_size_mb": 374.0,
+        "texture_size_mb": 357.0
+      },
+      "glb": {
+        "original_size_mb": 402.0,
+        "compressed_size_mb": 374.0,
+        "texture_size_mb": 357.0
+      }
+    }
+  },
+  {
+    "model_name": "Dragon_38k_skeleton_0tex",
+    "face_count": 38000,
+    "texture_count": 0,
+    "formats": {
+      "fbx": {
+        "original_size_mb": 2.15,
+        "compressed_size_mb": 1.78,
+        "texture_size_mb": 0.0
+      },
+      "obj": {
+        "original_size_mb": 3.13,
+        "compressed_size_mb": 0.95,
+        "texture_size_mb": 0.0
+      },
+      "gltf": {
+        "original_size_mb": 1.63,
+        "compressed_size_mb": 0.98,
+        "texture_size_mb": 0.0
+      },
+      "glb": {
+        "original_size_mb": 1.61,
+        "compressed_size_mb": 0.98,
+        "texture_size_mb": 0.0
+      }
+    }
+  },
+  {
+    "model_name": "AbandonedWarehouse_993k_36tex",
+    "face_count": 993000,
+    "texture_count": 36,
+    "formats": {
+      "fbx": {
+        "original_size_mb": 92.7,
+        "compressed_size_mb": 87.6,
+        "texture_size_mb": 69.6
+      },
+      "obj": {
+        "original_size_mb": 157.0,
+        "compressed_size_mb": 86.0,
+        "texture_size_mb": 69.6
+      },
+      "gltf": {
+        "original_size_mb": 100.0,
+        "compressed_size_mb": 75.7,
+        "texture_size_mb": 67.1
+      },
+      "glb": {
+        "original_size_mb": 100.0,
+        "compressed_size_mb": 75.7,
+        "texture_size_mb": 67.1
+      }
+    }
+  },
+  {
+    "model_name": "BurjKhalifaDubai_662k_1tex",
+    "face_count": 662000,
+    "texture_count": 1,
+    "formats": {
+      "fbx": {
+        "original_size_mb": 11.6,
+        "compressed_size_mb": 9.15,
+        "texture_size_mb": 0.201
+      },
+      "obj": {
+        "original_size_mb": 45.4,
+        "compressed_size_mb": 6.87,
+        "texture_size_mb": 0.201
+      },
+      "gltf": {
+        "original_size_mb": 27.3,
+        "compressed_size_mb": 4.92,
+        "texture_size_mb": 0.201
+      },
+      "glb": {
+        "original_size_mb": 27.1,
+        "compressed_size_mb": 4.73,
+        "texture_size_mb": 0.201
+      }
+    }
+  }
+]
