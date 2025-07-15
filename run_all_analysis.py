@@ -38,10 +38,20 @@ def main():
     """主函数"""
     print("=== 3D模型格式分析工具 ===")
     
-    # 检查数据文件是否存在
-    if not Path("data/model_data.csv").exists():
-        print("错误：找不到数据文件 data/model_data.csv")
+    # 检查rawdata目录和数据文件
+    json_path = Path("rawdata/model_data.json")
+    csv_path = Path("data/model_data.csv")
+    
+    if not json_path.exists():
+        print("错误：找不到原始数据文件 rawdata/model_data.json")
         return
+    
+    # 如果CSV文件不存在，先转换数据
+    if not csv_path.exists():
+        print("正在转换JSON数据为CSV格式...")
+        if not run_script("convert_json_to_csv.py"):
+            print("错误：数据转换失败")
+            return
     
     # 检查charts目录
     charts_dir = Path("charts")
@@ -49,7 +59,9 @@ def main():
     
     # 运行所有分析脚本
     scripts = [
+        "convert_json_to_csv.py",
         "generate_charts_simple.py",
+        "generate_advanced_charts.py",
         "generate_html_report.py"
     ]
     
@@ -70,10 +82,15 @@ def main():
                     print(f"  - {file_path}")
         
         print("\n查看结果：")
-        print("  - 文本报告: charts/analysis_report.txt")
+        print("  - 基础文本报告: charts/analysis_report.txt")
+        print("  - 高级文本报告: charts/advanced_analysis_report.txt")
         print("  - HTML报告: charts/analysis_report.html (在浏览器中打开)")
         print("  - 汇总数据: charts/summary_statistics.csv")
-        print("  - JSON数据: charts/summary_report.json")
+        print("  - 基础JSON数据: charts/summary_report.json")
+        print("  - 高级JSON数据: charts/advanced_summary_report.json")
+        print("  - 总体对比图: charts/overall_comparison.png")
+        print("  - 格式分析图: charts/format_analysis.png")
+        print("  - 各模型图表: charts/model_*.png")
 
 if __name__ == "__main__":
     main()
