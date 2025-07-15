@@ -148,5 +148,31 @@
         "load_memory_mb": 514
       }
     }
+  },
+  "Dragon": {
+    "face_count_k": 38,
+    "texture_count": 0,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 2.26,
+        "size_after_mb": 1.80,
+        "texture_size_mb": 0
+      },
+      "obj": {
+        "size_before_mb": 3.13,
+        "size_after_mb": 0.98,
+        "texture_size_mb": 0
+      },
+      "glTF": {
+        "size_before_mb": 1.63,
+        "size_after_mb": 0.98,
+        "texture_size_mb": 0
+      },
+      "glb": {
+        "size_before_mb": 1.63,
+        "size_after_mb": 0.98,
+        "texture_size_mb": 0
+      }
+    }
   }
 }
