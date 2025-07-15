@@ -42,34 +42,32 @@
     "texture_count": 405,
     "formats": {
       "fbx": {
-        "size_before_mb": 2.15,
-        "size_after_mb": 1.78,
-        "peak_memory_mb": null,
-        "texture_size_mb": 0.0,
-        "import_time_ms": 193563
+        "size_before_mb": 533,
+        "size_after_mb": 268,
+        "peak_memory_mb": 390,
+        "texture_size_mb": 488,
+        "import_time_ms": 186490
       },
       "obj": {
-        "size_before_mb": 3.13,
-        "size_after_mb": 0.95,
-        "peak_memory_mb": null,
-        "texture_size_mb": 0.0,
-        "import_time_ms": 82267
+        "size_before_mb": 489,
+        "size_after_mb": 384,
+        "texture_size_mb": 357
       },
       "glTF": {
-        "size_before_mb": 1.63,
-        "size_after_mb": 0.98,
-        "peak_memory_mb": null,
-        "texture_size_mb": 0.0,
-        "import_time_ms": 6486,
+        "size_before_mb": 402,
+        "size_after_mb": 374,
+        "peak_memory_mb": 225,
+        "texture_size_mb": 357,
+        "import_time_ms": 9962,
         "load_time_ms": 6486,
         "load_memory_mb": 114
       },
       "glb": {
-        "size_before_mb": 1.61,
-        "size_after_mb": 0.98,
-        "peak_memory_mb": null,
-        "texture_size_mb": 0.0,
-        "import_time_ms": 18910,
+        "size_before_mb": 402,
+        "size_after_mb": 374,
+        "peak_memory_mb": 7065.6,
+        "texture_size_mb": 357,
+        "import_time_ms": 13792,
         "load_time_ms": 18910,
         "load_memory_mb": 514
       }
