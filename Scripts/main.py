@@ -14,7 +14,7 @@ def load_raw_data():
     with open('RawData/all_models_data.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def filter_models_by_nonempty(data_by_format, models, face_counts):
+def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
     """
     Filters out models where all values for a given format are empty (None or 0).
     Returns the filtered lists and the indices of models to keep.
@@ -57,7 +57,7 @@ def create_import_time_comparison(models_data):
             else:
                 data_by_format[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, _, keep_indices = filter_models_by_nonempty(data_by_format, models, face_counts)
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
         data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -126,7 +126,7 @@ def create_size_memory_comparison(models_data):
                 size_after_data[fmt].append(None)
                 memory_data[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(size_before_data, models, face_counts)
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, size_before_data, models, face_counts)
     for fmt in formats:
         size_before_data[fmt] = [size_before_data[fmt][i] for i in keep_indices]
         size_after_data[fmt] = [size_after_data[fmt][i] for i in keep_indices]
@@ -258,7 +258,7 @@ def create_compression_texture_ratio(models_data):
                 compression_ratio_data[fmt].append(None)
                 texture_ratio_data[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(compression_ratio_data, models, face_counts)
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, compression_ratio_data, models, face_counts)
     for fmt in formats:
         compression_ratio_data[fmt] = [compression_ratio_data[fmt][i] for i in keep_indices]
         texture_ratio_data[fmt] = [texture_ratio_data[fmt][i] for i in keep_indices]
@@ -356,7 +356,7 @@ def create_gltf_glb_comparison(models_data):
                 load_time_data[fmt].append(None)
                 load_memory_data[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, _, keep_indices = filter_models_by_nonempty(load_time_data, models, face_counts)
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, load_time_data, models, face_counts)
     for fmt in formats:
         load_time_data[fmt] = [load_time_data[fmt][i] for i in keep_indices]
         load_memory_data[fmt] = [load_memory_data[fmt][i] for i in keep_indices]
@@ -534,7 +534,7 @@ def create_model_format_compression_ratio_chart(models_data):
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
     # Filter out models where all bars are empty
-    models, face_counts, _, keep_indices = filter_models_by_nonempty(data_by_format, models, face_counts)
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
         data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
@@ -775,7 +775,7 @@ def create_per_format_stats(models_data):
                     else:
                         texture_ratio.append(None)
         # Filter out models where all bars are empty
-        models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(size_before, models, face_counts)
+        models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, size_before, models, face_counts)
         for arr in [size_before, size_after, compression_ratio, texture_ratio]:
             arr[:] = [arr[i] for i in keep_indices]
 
@@ -831,7 +831,7 @@ def create_all_format_size_before(models_data):
                 else:
                     data[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(data, models, face_counts)
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, data, models, face_counts)
     for fmt in formats:
         data[fmt] = [data[fmt][i] for i in keep_indices]
 
@@ -887,7 +887,7 @@ def create_all_format_size_after(models_data):
                 else:
                     data[fmt].append(None)
     # Filter out models where all bars are empty
-    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(data, models, face_counts)
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, data, models, face_counts)
     for fmt in formats:
         data[fmt] = [data[fmt][i] for i in keep_indices]
 
