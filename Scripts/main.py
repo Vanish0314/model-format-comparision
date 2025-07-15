@@ -14,6 +14,24 @@ def load_raw_data():
     with open('RawData/all_models_data.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
+def filter_models_by_nonempty(data_by_format, models, face_counts):
+    """
+    Filters out models where all values for a given format are empty (None or 0).
+    Returns the filtered lists and the indices of models to keep.
+    """
+    keep_indices = []
+    for i, model_name in enumerate(models):
+        model_data = models_data[model_name]
+        has_data = False
+        for fmt in data_by_format:
+            if fmt in model_data['formats']:
+                if data_by_format[fmt][i] is not None and data_by_format[fmt][i] > 0:
+                    has_data = True
+                    break
+        if has_data:
+            keep_indices.append(i)
+    return [models[i] for i in keep_indices], [face_counts[i] for i in keep_indices], [model_data['texture_count'] for i, model_name in enumerate(models) if i in keep_indices], keep_indices
+
 def create_import_time_comparison(models_data):
     """Create import time comparison chart (log/linear scale + missing annotation)"""
     models = []
@@ -38,6 +56,10 @@ def create_import_time_comparison(models_data):
                 data_by_format[fmt].append(model_data['formats'][fmt]['import_time_ms'] / 1000)
             else:
                 data_by_format[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(data_by_format, models, face_counts)
+    for fmt in formats:
+        data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
     fig, ax = plt.subplots(figsize=(12, 8))
     x = np.arange(len(models))
     width = 0.2
@@ -103,6 +125,13 @@ def create_size_memory_comparison(models_data):
                 size_before_data[fmt].append(None)
                 size_after_data[fmt].append(None)
                 memory_data[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(size_before_data, models, face_counts)
+    for fmt in formats:
+        size_before_data[fmt] = [size_before_data[fmt][i] for i in keep_indices]
+        size_after_data[fmt] = [size_after_data[fmt][i] for i in keep_indices]
+        memory_data[fmt] = [memory_data[fmt][i] for i in keep_indices]
+
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 16))
     x = np.arange(len(models))
     width = 0.2
@@ -228,6 +257,12 @@ def create_compression_texture_ratio(models_data):
             else:
                 compression_ratio_data[fmt].append(None)
                 texture_ratio_data[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(compression_ratio_data, models, face_counts)
+    for fmt in formats:
+        compression_ratio_data[fmt] = [compression_ratio_data[fmt][i] for i in keep_indices]
+        texture_ratio_data[fmt] = [texture_ratio_data[fmt][i] for i in keep_indices]
+
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
     x = np.arange(len(models))
     width = 0.2
@@ -320,6 +355,12 @@ def create_gltf_glb_comparison(models_data):
             else:
                 load_time_data[fmt].append(None)
                 load_memory_data[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(load_time_data, models, face_counts)
+    for fmt in formats:
+        load_time_data[fmt] = [load_time_data[fmt][i] for i in keep_indices]
+        load_memory_data[fmt] = [load_memory_data[fmt][i] for i in keep_indices]
+
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
     x = np.arange(len(models))
     width = 0.35
@@ -465,6 +506,68 @@ def save_plot_as_html(fig, filepath, title, description):
         f.write(html_content)
     
     print(f"Report generated: {filepath}")
+
+def create_model_format_compression_ratio_chart(models_data):
+    """Create a chart showing compression ratio for each model and each format."""
+    formats = ['fbx', 'obj', 'glTF', 'glb']
+    models = []
+    face_counts = []
+    data_by_format = {fmt: [] for fmt in formats}
+    # Collect compression ratio for each model and format
+    for model_name, model_data in models_data.items():
+        has_any = False
+        row = []
+        for fmt in formats:
+            if fmt in model_data['formats']:
+                fmt_data = model_data['formats'][fmt]
+                sb = fmt_data.get('size_before_mb', None)
+                sa = fmt_data.get('size_after_mb', None)
+                if sb not in [None, 0] and sa not in [None, 0]:
+                    ratio = (1 - sa / sb) * 100
+                    data_by_format[fmt].append(ratio)
+                    has_any = True
+                else:
+                    data_by_format[fmt].append(None)
+            else:
+                data_by_format[fmt].append(None)
+        if has_any:
+            models.append(model_name)
+            face_counts.append(model_data['face_count_k'])
+    # Filter out models where all bars are empty
+    models, face_counts, _, keep_indices = filter_models_by_nonempty(data_by_format, models, face_counts)
+    for fmt in formats:
+        data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
+    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    x = np.arange(len(models))
+    width = 0.18
+    all_values = []
+    for fmt in formats:
+        all_values += [v for v in data_by_format[fmt] if v is not None]
+    use_log = should_use_log_scale(all_values)
+    for i, fmt in enumerate(formats):
+        offset = (i - 1.5) * width
+        values = data_by_format[fmt]
+        bar_vals = [v if v is not None else 0 for v in values]
+        bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
+        for bar, v in zip(bars, values):
+            if v is None:
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+            else:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} %', ha='center', va='bottom', fontsize=8, zorder=3)
+    ax.set_xlabel('Model (Face Count)', fontsize=12)
+    ylabel = 'Compression Ratio (%) (log scale)' if use_log else 'Compression Ratio (%) (linear scale)'
+    ax.set_ylabel(ylabel, fontsize=12)
+    ax.set_title('Compression Ratio by Model and Format', fontsize=16, fontweight='bold')
+    ax.set_xticks(x)
+    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.legend()
+    ax.grid(True, alpha=0.3, which='both', zorder=1)
+    if use_log:
+        ax.set_yscale('log')
+    ax.annotate(f'Note: y-axis is {"logarithmic" if use_log else "linear"} scale, missing data marked in red', xy=(1, 1), xycoords='axes fraction', fontsize=10, ha='right', va='bottom', color='gray')
+    plt.tight_layout()
+    save_plot_as_html(fig, 'Charts/model_format_compression_ratio.html', 'Compression Ratio by Model and Format', 'Compression ratio for each model and each format (log/linear scale, missing data marked)')
 
 def create_summary_report(models_data):
     """Create summary report"""
@@ -625,6 +728,11 @@ def create_summary_report(models_data):
                 <p>Compare size after compression across all formats for each model.</p>
                 <a href="all_format_size_after.html">View Report</a>
             </div>
+            <div class="report-card">
+                <h3>Model-Format Compression Ratio</h3>
+                <p>Compression ratio for each model and each format.</p>
+                <a href="model_format_compression_ratio.html">View Report</a>
+            </div>
         </div>
     </div>
 </body>
@@ -666,6 +774,11 @@ def create_per_format_stats(models_data):
                         texture_ratio.append(tc / sb * 100)
                     else:
                         texture_ratio.append(None)
+        # Filter out models where all bars are empty
+        models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(size_before, models, face_counts)
+        for arr in [size_before, size_after, compression_ratio, texture_ratio]:
+            arr[:] = [arr[i] for i in keep_indices]
+
         x = np.arange(len(models))
         width = 0.18
         fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
@@ -717,6 +830,11 @@ def create_all_format_size_before(models_data):
                     data[fmt].append(v)
                 else:
                     data[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(data, models, face_counts)
+    for fmt in formats:
+        data[fmt] = [data[fmt][i] for i in keep_indices]
+
     x = np.arange(len(models))
     width = 0.18
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
@@ -768,6 +886,11 @@ def create_all_format_size_after(models_data):
                     data[fmt].append(v)
                 else:
                     data[fmt].append(None)
+    # Filter out models where all bars are empty
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(data, models, face_counts)
+    for fmt in formats:
+        data[fmt] = [data[fmt][i] for i in keep_indices]
+
     x = np.arange(len(models))
     width = 0.18
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
@@ -833,6 +956,9 @@ def main():
     
     print("\nGenerating per-format stats report...")
     create_per_format_stats(models_data)
+    
+    print("\nGenerating model-format compression ratio chart...")
+    create_model_format_compression_ratio_chart(models_data)
     
     print("\nGenerating all-format size before comparison report...")
     create_all_format_size_before(models_data)
