@@ -82,33 +82,33 @@
       "fbx": {
         "size_before_mb": 92.7,
         "size_after_mb": 87.6,
-        "peak_memory_mb": null,
+        "peak_memory_mb": 284,
         "texture_size_mb": 69.6,
-        "import_time_ms": 193563
+        "import_time_ms": 71065
       },
       "obj": {
         "size_before_mb": 157.0,
         "size_after_mb": 86.0,
-        "peak_memory_mb": null,
+        "peak_memory_mb": 1024,
         "texture_size_mb": 69.6,
-        "import_time_ms": 82267
+        "import_time_ms": 116241
       },
       "glTF": {
         "size_before_mb": 100.0,
         "size_after_mb": 75.7,
-        "peak_memory_mb": null,
+        "peak_memory_mb": 170.0,
         "texture_size_mb": 67.1,
-        "import_time_ms": 6486,
+        "import_time_ms": 473,
         "load_time_ms": 6486,
         "load_memory_mb": 114
       },
       "glb": {
         "size_before_mb": 100.0,
         "size_after_mb": 75.7,
-        "peak_memory_mb": null,
+        "peak_memory_mb": 275,
         "texture_size_mb": 67.1,
         "import_time_ms": 18910,
-        "load_time_ms": 18910,
+        "load_time_ms": 571,
         "load_memory_mb": 514
       }
     }
