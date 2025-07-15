@@ -97,8 +97,8 @@
         "peak_memory_mb": 170.0,
         "texture_size_mb": 67.1,
         "import_time_ms": 473,
-        "load_time_ms": 6486,
-        "load_memory_mb": 114
+        "load_time_ms": 18291,
+        "load_memory_mb": 478
       },
       "glb": {
         "size_before_mb": 100.0,
@@ -106,8 +106,8 @@
         "peak_memory_mb": 275,
         "texture_size_mb": 67.1,
         "import_time_ms": 18910,
-        "load_time_ms": 571,
-        "load_memory_mb": 514
+        "load_time_ms": 15977,
+        "load_memory_mb": 511
       }
     }
   },
