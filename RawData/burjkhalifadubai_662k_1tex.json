@@ -1,0 +1,40 @@
+{
+  "BurjKhalifaDubai_662k_1tex": {
+    "face_count_k": 662,
+    "texture_count": 1,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 11.6,
+        "size_after_mb": 9.15,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 193563
+      },
+      "obj": {
+        "size_before_mb": 45.4,
+        "size_after_mb": 6.87,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 82267
+      },
+      "glTF": {
+        "size_before_mb": 27.3,
+        "size_after_mb": 4.92,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 6486,
+        "load_time_ms": 6486,
+        "load_memory_mb": 114
+      },
+      "glb": {
+        "size_before_mb": 27.1,
+        "size_after_mb": 4.73,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 18910,
+        "load_time_ms": 18910,
+        "load_memory_mb": 514
+      }
+    }
+  }
+}

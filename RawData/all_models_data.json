@@ -1,0 +1,154 @@
+{
+  "BistroExterior_2832k_405tex": {
+    "face_count_k": 2832,
+    "texture_count": 405,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 1037.0,
+        "size_after_mb": 587.0,
+        "peak_memory_mb": 768.0,
+        "texture_size_mb": 925.0,
+        "import_time_ms": 193563
+      },
+      "obj": {
+        "size_before_mb": 1220.0,
+        "size_after_mb": 551.0,
+        "peak_memory_mb": 2100.0,
+        "texture_size_mb": 925.0,
+        "import_time_ms": 82267
+      },
+      "glTF": {
+        "size_before_mb": 942.0,
+        "size_after_mb": 865.0,
+        "peak_memory_mb": 382.0,
+        "texture_size_mb": 815.0,
+        "import_time_ms": 6486,
+        "load_time_ms": 6486,
+        "load_memory_mb": 114
+      },
+      "glb": {
+        "size_before_mb": 941.0,
+        "size_after_mb": 865.0,
+        "peak_memory_mb": 15700.0,
+        "texture_size_mb": 815.0,
+        "import_time_ms": 18910,
+        "load_time_ms": 18910,
+        "load_memory_mb": 514
+      }
+    }
+  },
+  "BistroInterior_1293k_201tex": {
+    "face_count_k": 1293,
+    "texture_count": 405,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 2.15,
+        "size_after_mb": 1.78,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.0,
+        "import_time_ms": 193563
+      },
+      "obj": {
+        "size_before_mb": 3.13,
+        "size_after_mb": 0.95,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.0,
+        "import_time_ms": 82267
+      },
+      "glTF": {
+        "size_before_mb": 1.63,
+        "size_after_mb": 0.98,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.0,
+        "import_time_ms": 6486,
+        "load_time_ms": 6486,
+        "load_memory_mb": 114
+      },
+      "glb": {
+        "size_before_mb": 1.61,
+        "size_after_mb": 0.98,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.0,
+        "import_time_ms": 18910,
+        "load_time_ms": 18910,
+        "load_memory_mb": 514
+      }
+    }
+  },
+  "AbandonedWarehouse_993k_36tex": {
+    "face_count_k": 993,
+    "texture_count": 36,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 92.7,
+        "size_after_mb": 87.6,
+        "peak_memory_mb": null,
+        "texture_size_mb": 69.6,
+        "import_time_ms": 193563
+      },
+      "obj": {
+        "size_before_mb": 157.0,
+        "size_after_mb": 86.0,
+        "peak_memory_mb": null,
+        "texture_size_mb": 69.6,
+        "import_time_ms": 82267
+      },
+      "glTF": {
+        "size_before_mb": 100.0,
+        "size_after_mb": 75.7,
+        "peak_memory_mb": null,
+        "texture_size_mb": 67.1,
+        "import_time_ms": 6486,
+        "load_time_ms": 6486,
+        "load_memory_mb": 114
+      },
+      "glb": {
+        "size_before_mb": 100.0,
+        "size_after_mb": 75.7,
+        "peak_memory_mb": null,
+        "texture_size_mb": 67.1,
+        "import_time_ms": 18910,
+        "load_time_ms": 18910,
+        "load_memory_mb": 514
+      }
+    }
+  },
+  "BurjKhalifaDubai_662k_1tex": {
+    "face_count_k": 662,
+    "texture_count": 1,
+    "formats": {
+      "fbx": {
+        "size_before_mb": 11.6,
+        "size_after_mb": 9.15,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 193563
+      },
+      "obj": {
+        "size_before_mb": 45.4,
+        "size_after_mb": 6.87,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 82267
+      },
+      "glTF": {
+        "size_before_mb": 27.3,
+        "size_after_mb": 4.92,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 6486,
+        "load_time_ms": 6486,
+        "load_memory_mb": 114
+      },
+      "glb": {
+        "size_before_mb": 27.1,
+        "size_after_mb": 4.73,
+        "peak_memory_mb": null,
+        "texture_size_mb": 0.201,
+        "import_time_ms": 18910,
+        "load_time_ms": 18910,
+        "load_memory_mb": 514
+      }
+    }
+  }
+}
