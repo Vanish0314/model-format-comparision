@@ -23,8 +23,8 @@
         "peak_memory_mb": 382.0,
         "texture_size_mb": 815.0,
         "import_time_ms": 6486,
-        "load_time_ms": 6486,
-        "load_memory_mb": 114
+        "load_time_ms": 140152,
+        "load_memory_mb": 5324.8
       },
       "glb": {
         "size_before_mb": 941.0,
@@ -32,8 +32,8 @@
         "peak_memory_mb": 15700.0,
         "texture_size_mb": 815.0,
         "import_time_ms": 18910,
-        "load_time_ms": 18910,
-        "load_memory_mb": 514
+        "load_time_ms": 95290,
+        "load_memory_mb": 14950.4
       }
     }
   },
@@ -59,8 +59,8 @@
         "peak_memory_mb": 225,
         "texture_size_mb": 357,
         "import_time_ms": 9962,
-        "load_time_ms": 6486,
-        "load_memory_mb": 114
+        "load_time_ms": 74397,
+        "load_memory_mb": 2457.6
       },
       "glb": {
         "size_before_mb": 402,
@@ -68,8 +68,8 @@
         "peak_memory_mb": 7065.6,
         "texture_size_mb": 357,
         "import_time_ms": 13792,
-        "load_time_ms": 18910,
-        "load_memory_mb": 514
+        "load_time_ms": 52072,
+        "load_memory_mb": 7172.1
       }
     }
   },
@@ -97,8 +97,8 @@
         "peak_memory_mb": 170.0,
         "texture_size_mb": 67.1,
         "import_time_ms": 473,
-        "load_time_ms": 6486,
-        "load_memory_mb": 114
+        "load_time_ms": 18291,
+        "load_memory_mb": 478
       },
       "glb": {
         "size_before_mb": 100.0,
@@ -106,8 +106,8 @@
         "peak_memory_mb": 275,
         "texture_size_mb": 67.1,
         "import_time_ms": 18910,
-        "load_time_ms": 571,
-        "load_memory_mb": 514
+        "load_time_ms": 15977,
+        "load_memory_mb": 511
       }
     }
   },
@@ -135,8 +135,8 @@
         "peak_memory_mb": 144,
         "texture_size_mb": 0,
         "import_time_ms": 163,
-        "load_time_ms": 6486,
-        "load_memory_mb": 114
+        "load_time_ms": 2367,
+        "load_memory_mb": 61
       },
       "glb": {
         "size_before_mb": 27.2,
@@ -144,8 +144,8 @@
         "peak_memory_mb": null,
         "texture_size_mb": 0,
         "import_time_ms": 166,
-        "load_time_ms": 18910,
-        "load_memory_mb": 514
+        "load_time_ms": 2457,
+        "load_memory_mb": 84
       }
     }
   },
