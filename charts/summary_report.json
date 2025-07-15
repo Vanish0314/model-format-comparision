@@ -1,0 +1,30 @@
+{
+  "fbx": {
+    "avg_original_size": 335.29,
+    "avg_compressed_size": 190.706,
+    "avg_compression_ratio": 27.388918231130855,
+    "avg_texture_percentage": 51.514100461207114,
+    "count": 5
+  },
+  "obj": {
+    "avg_original_size": 382.906,
+    "avg_compressed_size": 205.76399999999998,
+    "avg_compression_ratio": 55.20955837162482,
+    "avg_texture_percentage": 38.71994971381771,
+    "count": 5
+  },
+  "gltf": {
+    "avg_original_size": 294.586,
+    "avg_compressed_size": 264.12,
+    "avg_compression_ratio": 32.25891887708313,
+    "avg_texture_percentage": 48.6320561189294,
+    "count": 5
+  },
+  "glb": {
+    "avg_original_size": 294.342,
+    "avg_compressed_size": 264.082,
+    "avg_compression_ratio": 32.2036497439313,
+    "avg_texture_percentage": 48.65153138784707,
+    "count": 5
+  }
+}

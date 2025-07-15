@@ -1,0 +1,202 @@
+[
+  {
+    "model": "AbandonedWarehouse",
+    "face_count_k": 993.0,
+    "texture_count": 36,
+    "format": "FBX",
+    "original_size": 92.7,
+    "compressed_size": 87.6,
+    "compression_ratio": 5.501618122977355,
+    "texture_percentage": 75.08090614886731
+  },
+  {
+    "model": "AbandonedWarehouse",
+    "face_count_k": 993.0,
+    "texture_count": 36,
+    "format": "OBJ",
+    "original_size": 157.0,
+    "compressed_size": 86.0,
+    "compression_ratio": 45.22292993630573,
+    "texture_percentage": 44.331210191082796
+  },
+  {
+    "model": "AbandonedWarehouse",
+    "face_count_k": 993.0,
+    "texture_count": 36,
+    "format": "GLTF",
+    "original_size": 100.0,
+    "compressed_size": 75.7,
+    "compression_ratio": 24.299999999999997,
+    "texture_percentage": 67.1
+  },
+  {
+    "model": "AbandonedWarehouse",
+    "face_count_k": 993.0,
+    "texture_count": 36,
+    "format": "GLB",
+    "original_size": 100.0,
+    "compressed_size": 75.7,
+    "compression_ratio": 24.299999999999997,
+    "texture_percentage": 67.1
+  },
+  {
+    "model": "BistroExterior",
+    "face_count_k": 2832.0,
+    "texture_count": 405,
+    "format": "FBX",
+    "original_size": 1037.0,
+    "compressed_size": 587.0,
+    "compression_ratio": 43.39440694310511,
+    "texture_percentage": 89.19961427193829
+  },
+  {
+    "model": "BistroExterior",
+    "face_count_k": 2832.0,
+    "texture_count": 405,
+    "format": "OBJ",
+    "original_size": 1220.0,
+    "compressed_size": 551.0,
+    "compression_ratio": 54.83606557377049,
+    "texture_percentage": 75.81967213114754
+  },
+  {
+    "model": "BistroExterior",
+    "face_count_k": 2832.0,
+    "texture_count": 405,
+    "format": "GLTF",
+    "original_size": 942.0,
+    "compressed_size": 865.0,
+    "compression_ratio": 8.174097664543524,
+    "texture_percentage": 86.51804670912952
+  },
+  {
+    "model": "BistroExterior",
+    "face_count_k": 2832.0,
+    "texture_count": 405,
+    "format": "GLB",
+    "original_size": 941.0,
+    "compressed_size": 865.0,
+    "compression_ratio": 8.076514346439957,
+    "texture_percentage": 86.60998937300744
+  },
+  {
+    "model": "BistroInterior",
+    "face_count_k": 1293.0,
+    "texture_count": 201,
+    "format": "FBX",
+    "original_size": 533.0,
+    "compressed_size": 268.0,
+    "compression_ratio": 49.71857410881801,
+    "texture_percentage": 91.55722326454033
+  },
+  {
+    "model": "BistroInterior",
+    "face_count_k": 1293.0,
+    "texture_count": 201,
+    "format": "OBJ",
+    "original_size": 489.0,
+    "compressed_size": 384.0,
+    "compression_ratio": 21.472392638036812,
+    "texture_percentage": 73.00613496932516
+  },
+  {
+    "model": "BistroInterior",
+    "face_count_k": 1293.0,
+    "texture_count": 201,
+    "format": "GLTF",
+    "original_size": 402.0,
+    "compressed_size": 374.0,
+    "compression_ratio": 6.965174129353234,
+    "texture_percentage": 88.80597014925374
+  },
+  {
+    "model": "BistroInterior",
+    "face_count_k": 1293.0,
+    "texture_count": 201,
+    "format": "GLB",
+    "original_size": 402.0,
+    "compressed_size": 374.0,
+    "compression_ratio": 6.965174129353234,
+    "texture_percentage": 88.80597014925374
+  },
+  {
+    "model": "BurjKhalifaDubai",
+    "face_count_k": 662.0,
+    "texture_count": 1,
+    "format": "FBX",
+    "original_size": 11.6,
+    "compressed_size": 9.15,
+    "compression_ratio": 21.12068965517241,
+    "texture_percentage": 1.7327586206896555
+  },
+  {
+    "model": "BurjKhalifaDubai",
+    "face_count_k": 662.0,
+    "texture_count": 1,
+    "format": "OBJ",
+    "original_size": 45.4,
+    "compressed_size": 6.87,
+    "compression_ratio": 84.86784140969164,
+    "texture_percentage": 0.4427312775330397
+  },
+  {
+    "model": "BurjKhalifaDubai",
+    "face_count_k": 662.0,
+    "texture_count": 1,
+    "format": "GLTF",
+    "original_size": 27.3,
+    "compressed_size": 4.92,
+    "compression_ratio": 81.97802197802199,
+    "texture_percentage": 0.7362637362637363
+  },
+  {
+    "model": "BurjKhalifaDubai",
+    "face_count_k": 662.0,
+    "texture_count": 1,
+    "format": "GLB",
+    "original_size": 27.1,
+    "compressed_size": 4.73,
+    "compression_ratio": 82.54612546125462,
+    "texture_percentage": 0.7416974169741697
+  },
+  {
+    "model": "Dragon",
+    "face_count_k": 38.0,
+    "texture_count": 0,
+    "format": "FBX",
+    "original_size": 2.15,
+    "compressed_size": 1.78,
+    "compression_ratio": 17.20930232558139,
+    "texture_percentage": 0.0
+  },
+  {
+    "model": "Dragon",
+    "face_count_k": 38.0,
+    "texture_count": 0,
+    "format": "OBJ",
+    "original_size": 3.13,
+    "compressed_size": 0.95,
+    "compression_ratio": 69.64856230031948,
+    "texture_percentage": 0.0
+  },
+  {
+    "model": "Dragon",
+    "face_count_k": 38.0,
+    "texture_count": 0,
+    "format": "GLTF",
+    "original_size": 1.63,
+    "compressed_size": 0.98,
+    "compression_ratio": 39.87730061349693,
+    "texture_percentage": 0.0
+  },
+  {
+    "model": "Dragon",
+    "face_count_k": 38.0,
+    "texture_count": 0,
+    "format": "GLB",
+    "original_size": 1.61,
+    "compressed_size": 0.98,
+    "compression_ratio": 39.1304347826087,
+    "texture_percentage": 0.0
+  }
+]
