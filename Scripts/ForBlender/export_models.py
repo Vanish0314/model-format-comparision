@@ -7,7 +7,7 @@ import addon_utils
 # ----------- 配置区 ----------- 
 # 只需设置这两个变量
 base_export_dir = r"C:\Users\Administrator\Desktop\Assets\TestModels\Models"
-model_name = "AbandonedWarehouse"  # 文件名和文件夹名
+model_name = "BurjKhalifaDubai"  # 文件名和文件夹名
 
 # ----------- 工具函数 -----------
 
@@ -85,14 +85,10 @@ fbx_path = os.path.join(export_paths["fbx"], f"{file_name}.fbx")
 bpy.ops.export_scene.fbx(
     filepath=fbx_path,
     use_selection=False,
-    path_mode='AUTO',  # 使用自动路径模式
+    path_mode='COPY',  # 使用复制模式
     embed_textures=False,
     batch_mode='OFF'
 )
-# 复制纹理到 Fbx/Textures
-copy_textures_to_dir(os.path.join(export_paths["fbx"], "Textures"))
-# 移动纹理到 .fbm 文件夹
-move_textures_to_fbm(export_paths["fbx"], file_name)
 
 # --- glTF (.gltf + .bin + 纹理) ---
 gltf_path = os.path.join(export_paths["gltf"], f"{file_name}.gltf")
