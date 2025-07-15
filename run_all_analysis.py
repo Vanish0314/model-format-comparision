@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 一键运行所有3D模型格式分析
+使用新的模块化架构
 """
 
 import subprocess
@@ -34,9 +35,32 @@ def run_script(script_name):
         print(f"✗ 运行 {script_name} 时出错: {e}")
         return False
 
+def run_new_analysis():
+    """运行新的模块化分析"""
+    print("正在运行新的模块化分析...")
+    try:
+        result = subprocess.run([sys.executable, "run_analysis.py"], 
+                              capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print("✓ 新的模块化分析执行成功")
+            if result.stdout:
+                print(result.stdout)
+            return True
+        else:
+            print("✗ 新的模块化分析执行失败")
+            if result.stderr:
+                print(result.stderr)
+            return False
+    except Exception as e:
+        print(f"✗ 运行新的模块化分析时出错: {e}")
+        return False
+
 def main():
     """主函数"""
     print("=== 3D模型格式分析工具 ===")
+    print("一键运行所有分析")
+    print()
     
     # 检查rawdata目录和数据文件
     json_path = Path("rawdata/model_data.json")
@@ -57,7 +81,17 @@ def main():
     charts_dir = Path("charts")
     charts_dir.mkdir(exist_ok=True)
     
-    # 运行所有分析脚本
+    success_count = 0
+    total_scripts = 0
+    
+    # 首先运行新的模块化分析
+    print("=== 运行新的模块化分析 ===")
+    if run_new_analysis():
+        success_count += 1
+    total_scripts += 1
+    
+    # 然后运行传统的脚本（如果存在）
+    print("\n=== 运行传统分析脚本 ===")
     scripts = [
         "convert_json_to_csv.py",
         "generate_charts_simple.py",
@@ -65,13 +99,13 @@ def main():
         "generate_html_report.py"
     ]
     
-    success_count = 0
     for script in scripts:
         if run_script(script):
             success_count += 1
+        total_scripts += 1
     
     print(f"\n=== 分析完成 ===")
-    print(f"成功运行 {success_count}/{len(scripts)} 个脚本")
+    print(f"成功运行 {success_count}/{total_scripts} 个分析")
     
     if success_count > 0:
         print("\n生成的文件：")
@@ -85,12 +119,16 @@ def main():
         print("  - 基础文本报告: charts/analysis_report.txt")
         print("  - 高级文本报告: charts/advanced_analysis_report.txt")
         print("  - HTML报告: charts/analysis_report.html (在浏览器中打开)")
+        print("  - 内存分析: charts/memory_analysis_report.txt")
         print("  - 汇总数据: charts/summary_statistics.csv")
-        print("  - 基础JSON数据: charts/summary_report.json")
-        print("  - 高级JSON数据: charts/advanced_summary_report.json")
-        print("  - 总体对比图: charts/overall_comparison.png")
-        print("  - 格式分析图: charts/format_analysis.png")
-        print("  - 各模型图表: charts/model_*.png")
+        print("  - JSON数据: charts/summary_report.json")
+        print("  - 详细内存分析: charts/detailed_memory_analysis.json")
+        print("  - 模型对比数据: charts/model_comparison_data.json")
+        
+        print("\n推荐查看顺序：")
+        print("1. charts/analysis_report.html (完整的HTML报告)")
+        print("2. charts/memory_analysis_report.txt (内存分析报告)")
+        print("3. charts/summary_statistics.csv (汇总数据)")
 
 if __name__ == "__main__":
     main()
