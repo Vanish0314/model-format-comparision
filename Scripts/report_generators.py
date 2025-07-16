@@ -27,7 +27,7 @@ def create_import_time_comparison(models_data: Dict[str, Any]):
     valid_indices = []
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = any(
-            fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]
+            fmt in model_data['formats'] and 'importTimeMs' in model_data['formats'][fmt]
             for fmt in formats
         )
         if has_data:
@@ -38,8 +38,8 @@ def create_import_time_comparison(models_data: Dict[str, Any]):
         for idx in valid_indices:
             model_name = list(models_data.keys())[idx]
             model_data = models_data[model_name]
-            if fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]:
-                data_by_format[fmt].append(model_data['formats'][fmt]['import_time_ms'] / 1000)
+            if fmt in model_data['formats'] and 'importTimeMs' in model_data['formats'][fmt]:
+                data_by_format[fmt].append(model_data['formats'][fmt]['importTimeMs'] / 1000)
             else:
                 data_by_format[fmt].append(None)
     models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
