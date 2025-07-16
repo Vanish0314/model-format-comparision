@@ -24,7 +24,7 @@
         "sizeAfterZipMB": 865.0,
         "peakMemoryMB": 382.0,
         "textureSizeBeforeZipMB": 815.0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 812,
         "importTimeMs": 6486,
         "loadTimeMs": 140152,
         "loadPeakMemoryMB": 5324.8
@@ -34,7 +34,7 @@
         "sizeAfterZipMB": 865.0,
         "peakMemoryMB": 15700.0,
         "textureSizeBeforeZipMB": 815.0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 812,
         "importTimeMs": 18910,
         "loadTimeMs": 95290,
         "loadPeakMemoryMB": 14950.4
@@ -50,7 +50,7 @@
         "sizeAfterZipMB": 268,
         "peakMemoryMB": 390,
         "textureSizeBeforeZipMB": 488,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 233,
         "importTimeMs": 100656
       },
       "obj": {
@@ -58,7 +58,7 @@
         "sizeAfterZipMB": 384,
         "peakMemoryMB": 1331.2,
         "textureSizeBeforeZipMB": 357,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 233,
         "importTimeMs": 157902
       },
       "glTF": {
@@ -66,7 +66,7 @@
         "sizeAfterZipMB": 374,
         "peakMemoryMB": 225,
         "textureSizeBeforeZipMB": 357,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 356,
         "importTimeMs": 8477,
         "loadTimeMs": 74397,
         "loadPeakMemoryMB": 2457.6
@@ -76,7 +76,7 @@
         "sizeAfterZipMB": 374,
         "peakMemoryMB": 7065.6,
         "textureSizeBeforeZipMB": 357,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 356,
         "importTimeMs": 13620,
         "loadTimeMs": 52072,
         "loadPeakMemoryMB": 7172.1
@@ -92,7 +92,7 @@
         "sizeAfterZipMB": 87.6,
         "peakMemoryMB": 284,
         "textureSizeBeforeZipMB": 69.6,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 63.5,
         "importTimeMs": 71065
       },
       "obj": {
@@ -100,7 +100,7 @@
         "sizeAfterZipMB": 86.0,
         "peakMemoryMB": 1024,
         "textureSizeBeforeZipMB": 69.6,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 63.5,
         "importTimeMs": 116241
       },
       "glTF": {
@@ -108,7 +108,7 @@
         "sizeAfterZipMB": 75.7,
         "peakMemoryMB": 170.0,
         "textureSizeBeforeZipMB": 67.1,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 66.7,
         "importTimeMs": 473,
         "loadTimeMs": 18291,
         "loadPeakMemoryMB": 478
@@ -118,7 +118,7 @@
         "sizeAfterZipMB": 75.7,
         "peakMemoryMB": 275,
         "textureSizeBeforeZipMB": 67.1,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 66.7,
         "importTimeMs": 18910,
         "loadTimeMs": 15977,
         "loadPeakMemoryMB": 511
@@ -134,7 +134,7 @@
         "sizeAfterZipMB": 10,
         "peakMemoryMB": 128,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 0,
         "importTimeMs": 44600
       },
       "obj": {
@@ -142,7 +142,7 @@
         "sizeAfterZipMB": 7.23,
         "peakMemoryMB": 493,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 0,
         "importTimeMs": 64334
       },
       "glTF": {
@@ -150,7 +150,7 @@
         "sizeAfterZipMB": 4.74,
         "peakMemoryMB": 52,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 0,
         "importTimeMs": 181,
         "loadTimeMs": 2367,
         "loadPeakMemoryMB": 61
@@ -160,7 +160,7 @@
         "sizeAfterZipMB": 4.74,
         "peakMemoryMB": 40,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487,
+        "textureSizeAfterZipMB": 0,
         "importTimeMs": 174,
         "loadTimeMs": 2457,
         "loadPeakMemoryMB": 84
@@ -175,25 +175,25 @@
         "sizeBeforeZipMB": 2.26,
         "sizeAfterZipMB": 1.80,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487
+        "textureSizeAfterZipMB": 0
       },
       "obj": {
         "sizeBeforeZipMB": 3.13,
         "sizeAfterZipMB": 0.98,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487
+        "textureSizeAfterZipMB": 0
       },
       "glTF": {
         "sizeBeforeZipMB": 1.63,
         "sizeAfterZipMB": 0.98,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487
+        "textureSizeAfterZipMB": 0
       },
       "glb": {
         "sizeBeforeZipMB": 1.63,
         "sizeAfterZipMB": 0.98,
         "textureSizeBeforeZipMB": 0,
-        "textureSizeAfterZipMB": 487
+        "textureSizeAfterZipMB": 0
       }
     }
   }
