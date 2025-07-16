@@ -523,11 +523,12 @@ def create_summary_report(models_data):
     # 添加模型信息
     for model_name, model_data in models_data.items():
         formats = ', '.join(model_data['formats'].keys())
+        face_count_k = model_data.get('face_count_k', 'N/A')
         html_content += f"""
                 <tr>
                     <td>{model_name}</td>
-                    <td>{model_data['face_count_k']}k</td>
-                    <td>{model_data['texture_count']}</td>
+                    <td>{face_count_k}k</td>
+                    <td>{model_data.get('texture_count', 'N/A')}</td>
                     <td>{formats}</td>
                 </tr>
 """
