@@ -926,6 +926,9 @@ def create_combined_report(models_data):
     create_compression_texture_ratio(models_data)
     create_model_format_compression_ratio_chart(models_data)
 
+    # 生成线性高图
+    create_all_format_size_before_after_linear_tall(models_data)
+
     # 图表文件名及标题
     chart_files = [
         ("Charts/all_format_size_before_after.png", "All-Format Size Before/After Compression"),
@@ -934,6 +937,7 @@ def create_combined_report(models_data):
         ("Charts/size_memory_comparison.png", "File Size and Memory Usage Comparison"),
         ("Charts/peak_memory_usage.png", "Peak Memory Usage"),
         ("Charts/import_time_comparison.png", "Import Time Comparison"),
+        ("Charts/all_format_size_before_after_linear_tall.png", "All-Format Size Before/After Compression (Linear Tall)")
     ]
     # 直接嵌入图片
     chart_imgs = ""
@@ -1071,11 +1075,11 @@ def create_all_format_size_before_after(models_data):
         color_before_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1))
         color_after_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1))
         non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
-        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Non-Texture)', color=color_before, zorder=2)
-        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture)', color=color_before_texture, zorder=3)
+        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
+        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
         non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
-        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Non-Texture)', color=color_after, zorder=2)
-        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture)', color=color_after_texture, zorder=3)
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
         # 标注
         for idx, (bar, v, t) in enumerate(zip(bars1, before_vals, texture_before)):
             if v is None:
@@ -1177,11 +1181,11 @@ def create_all_format_size_before_after_linear_tall(models_data):
         color_before_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1))
         color_after_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1))
         non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
-        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Non-Texture)', color=color_before, zorder=2)
-        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture)', color=color_before_texture, zorder=3)
+        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
+        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
         non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
-        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Non-Texture)', color=color_after, zorder=2)
-        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture)', color=color_after_texture, zorder=3)
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
         for idx, (bar, v, t) in enumerate(zip(bars1, before_vals, texture_before)):
             if v is None:
                 ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
