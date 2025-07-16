@@ -941,13 +941,15 @@ def create_combined_report(models_data):
     # ... existing code ...
 
 def create_all_format_size_before_after(models_data):
-    """合并Size Before/After Compression为一张分组柱状图"""
+    """合并Size Before/After Compression为一张分组堆叠柱状图（下半为纹理，上半为格式本体）"""
     formats = ['fbx', 'obj', 'glTF', 'glb']
     models = []
     face_counts = []
     texture_counts = []
     data_before = {fmt: [] for fmt in formats}
     data_after = {fmt: [] for fmt in formats}
+    texture_before = {fmt: [] for fmt in formats}
+    texture_after = {fmt: [] for fmt in formats}
     for model_name, model_data in models_data.items():
         has_data = any(fmt in model_data['formats'] and (
             model_data['formats'][fmt].get('size_before_mb', None) not in [None, 0] or
@@ -960,38 +962,64 @@ def create_all_format_size_before_after(models_data):
                 if fmt in model_data['formats']:
                     data_before[fmt].append(model_data['formats'][fmt].get('size_before_mb', None))
                     data_after[fmt].append(model_data['formats'][fmt].get('size_after_mb', None))
+                    texture_before[fmt].append(model_data['formats'][fmt].get('texture_size_mb', 0) or 0)
+                    texture_after[fmt].append(model_data['formats'][fmt].get('texture_size_after_zip_mb', 0) or 0)
                 else:
                     data_before[fmt].append(None)
                     data_after[fmt].append(None)
+                    texture_before[fmt].append(0)
+                    texture_after[fmt].append(0)
     # 过滤无数据模型
     models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, data_before, models, face_counts)
     for fmt in formats:
         data_before[fmt] = [data_before[fmt][i] for i in keep_indices]
         data_after[fmt] = [data_after[fmt][i] for i in keep_indices]
+        texture_before[fmt] = [texture_before[fmt][i] for i in keep_indices]
+        texture_after[fmt] = [texture_after[fmt][i] for i in keep_indices]
     x = np.arange(len(models))
     width = 0.18
     fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
-    # 色系定义
     base_colors = plt.get_cmap('tab10').colors
     for i, fmt in enumerate(formats):
         offset = (i - 1.5) * width * 2
-        before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
-        after_vals = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
-        # before: 主色，after: 明度降低
-        color_before = base_colors[i]
-        color_after = tuple(np.clip(np.array(base_colors[i]) + 0.3, 0, 1))
-        bars1 = ax.bar(x + offset, before_vals, width, label=f'{fmt} Before', color=color_before, zorder=2)
-        bars2 = ax.bar(x + offset + width, after_vals, width, label=f'{fmt} After', color=color_after, zorder=2)
-        for bar, v in zip(bars1, data_before[fmt]):
-            if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
-            elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
-        for bar, v in zip(bars2, data_after[fmt]):
-            if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
-            elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+        # Before
+        total_before = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
+        tex_before = [t if t not in [None] else 0 for t in texture_before[fmt]]
+        fmt_before = [max(tb - tt, 0) for tb, tt in zip(total_before, tex_before)]
+        # After
+        total_after = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
+        tex_after = [t if t not in [None] else 0 for t in texture_after[fmt]]
+        fmt_after = [max(tb - tt, 0) for tb, tt in zip(total_after, tex_after)]
+        # 绘制before
+        bars_tex_before = ax.bar(x + offset, tex_before, width, label=f'{fmt} Before (Texture)', color=base_colors[i], alpha=0.6, zorder=2)
+        bars_fmt_before = ax.bar(x + offset, fmt_before, width, bottom=tex_before, label=f'{fmt} Before (Format)', color=base_colors[i], alpha=1.0, zorder=2)
+        # 绘制after
+        bars_tex_after = ax.bar(x + offset + width, tex_after, width, label=f'{fmt} After (Texture)', color=base_colors[i+1 if i+1 < len(base_colors) else i], alpha=0.6, zorder=2)
+        bars_fmt_after = ax.bar(x + offset + width, fmt_after, width, bottom=tex_after, label=f'{fmt} After (Format)', color=base_colors[i+1 if i+1 < len(base_colors) else i], alpha=1.0, zorder=2)
+        # 标注before
+        for j in range(len(models)):
+            if total_before[j] > 0:
+                # 纹理顶部下方标注纹理大小
+                if tex_before[j] > 0:
+                    ax.text(x[j] + offset, tex_before[j] - tex_before[j]*0.05, f'{tex_before[j]:.1f}', ha='center', va='top', fontsize=8, color='black', zorder=3)
+                # 纹理顶部上方标注纹理占比
+                if total_before[j] > 0 and tex_before[j] > 0:
+                    percent = tex_before[j] / total_before[j] * 100
+                    ax.text(x[j] + offset, tex_before[j] + fmt_before[j] + total_before[j]*0.01, f'{percent:.0f}%', ha='center', va='bottom', fontsize=8, color='black', zorder=3)
+                # 柱子最顶端标注总大小
+                ax.text(x[j] + offset, total_before[j], f'{total_before[j]:.1f}', ha='center', va='bottom', fontsize=8, fontweight='bold', color='black', zorder=3)
+        # 标注after
+        for j in range(len(models)):
+            if total_after[j] > 0:
+                # 纹理顶部下方标注纹理大小
+                if tex_after[j] > 0:
+                    ax.text(x[j] + offset + width, tex_after[j] - tex_after[j]*0.05, f'{tex_after[j]:.1f}', ha='center', va='top', fontsize=8, color='black', zorder=3)
+                # 纹理顶部上方标注纹理占比
+                if total_after[j] > 0 and tex_after[j] > 0:
+                    percent = tex_after[j] / total_after[j] * 100
+                    ax.text(x[j] + offset + width, tex_after[j] + fmt_after[j] + total_after[j]*0.01, f'{percent:.0f}%', ha='center', va='bottom', fontsize=8, color='black', zorder=3)
+                # 柱子最顶端标注总大小
+                ax.text(x[j] + offset + width, total_after[j], f'{total_after[j]:.1f}', ha='center', va='bottom', fontsize=8, fontweight='bold', color='black', zorder=3)
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_before[fmt] if v not in [None, 0]]
@@ -1004,7 +1032,7 @@ def create_all_format_size_before_after(models_data):
     ax.set_xticks(x)
     labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.legend()
+    ax.legend(ncol=2)
     ax.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log:
         ax.set_yscale('log')
