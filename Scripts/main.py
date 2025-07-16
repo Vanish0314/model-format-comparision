@@ -1139,6 +1139,95 @@ def create_per_format_stats(models_data):
         plt.tight_layout()
         save_plot_as_html(fig, f'Charts/{fmt}_stats.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for {fmt} (log/linear scale, missing data marked)')
 
+def create_all_format_size_before_after_linear(models_data):
+    """合并Size Before/After Compression为一张分组堆叠柱状图（线性坐标，图片高度加大）"""
+    formats = ['fbx', 'obj', 'glTF', 'glb']
+    models = []
+    face_counts = []
+    texture_counts = []
+    data_before = {fmt: [] for fmt in formats}
+    data_after = {fmt: [] for fmt in formats}
+    texture_after = {fmt: [] for fmt in formats}
+    non_texture_after = {fmt: [] for fmt in formats}
+    for model_name, model_data in models_data.items():
+        has_data = any(fmt in model_data['formats'] and (
+            model_data['formats'][fmt].get('size_before_mb', None) not in [None, 0] or
+            model_data['formats'][fmt].get('size_after_mb', None) not in [None, 0]) for fmt in formats)
+        if has_data:
+            models.append(model_name)
+            face_counts.append(model_data['face_count_k'])
+            texture_counts.append(model_data['texture_count'])
+            for fmt in formats:
+                if fmt in model_data['formats']:
+                    sb = model_data['formats'][fmt].get('size_before_mb', None)
+                    sa = model_data['formats'][fmt].get('size_after_mb', None)
+                    tex = model_data['formats'][fmt].get('texture_size_mb', None)
+                    data_before[fmt].append(sb)
+                    data_after[fmt].append(sa)
+                    if sa not in [None, 0] and tex not in [None, 0]:
+                        texture_after[fmt].append(tex)
+                        non_texture_after[fmt].append(sa - tex)
+                    elif sa not in [None, 0]:
+                        texture_after[fmt].append(0)
+                        non_texture_after[fmt].append(sa)
+                    else:
+                        texture_after[fmt].append(None)
+                        non_texture_after[fmt].append(None)
+                else:
+                    data_before[fmt].append(None)
+                    data_after[fmt].append(None)
+                    texture_after[fmt].append(None)
+                    non_texture_after[fmt].append(None)
+    # 过滤无数据模型
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, data_before, models, face_counts)
+    for fmt in formats:
+        data_before[fmt] = [data_before[fmt][i] for i in keep_indices]
+        data_after[fmt] = [data_after[fmt][i] for i in keep_indices]
+        texture_after[fmt] = [texture_after[fmt][i] for i in keep_indices]
+        non_texture_after[fmt] = [non_texture_after[fmt][i] for i in keep_indices]
+    x = np.arange(len(models))
+    width = 0.18
+    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 30))  # 高度大幅提升
+    base_colors = plt.get_cmap('tab10').colors
+    for i, fmt in enumerate(formats):
+        offset = (i - 1.5) * width * 2
+        before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
+        tex_vals = [v if v not in [None, 0] else 0 for v in texture_after[fmt]]
+        non_tex_vals = [v if v not in [None, 0] else 0 for v in non_texture_after[fmt]]
+        color_before = base_colors[i]
+        color_tex = tuple(np.clip(np.array(base_colors[i]) + 0.15, 0, 1))
+        color_non_tex = tuple(np.clip(np.array(base_colors[i]) + 0.35, 0, 1))
+        bars1 = ax.bar(x + offset, before_vals, width, label=f'{fmt} Before', color=color_before, zorder=2)
+        bars2_tex = ax.bar(x + offset + width, tex_vals, width, label=f'{fmt} After(Texture)', color=color_tex, zorder=2)
+        bars2_non_tex = ax.bar(x + offset + width, non_tex_vals, width, bottom=tex_vals, label=f'{fmt} After(Non-Texture)', color=color_non_tex, zorder=2)
+        # 标注before
+        for bar, v in zip(bars1, data_before[fmt]):
+            if v is None:
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+            elif v not in [None, 0]:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+        # 标注after总和（在最顶端）
+        for bar_tex, bar_non_tex, tex, non_tex, sa in zip(bars2_tex, bars2_non_tex, tex_vals, non_tex_vals, data_after[fmt]):
+            if sa is None:
+                ax.text(bar_tex.get_x() + bar_tex.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+            elif sa not in [None, 0]:
+                total_height = tex + non_tex
+                ax.text(bar_tex.get_x() + bar_tex.get_width()/2., total_height, f'{sa:.1f}', ha='center', va='bottom', fontsize=8, fontweight='bold', color='black', zorder=3)
+    ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+    ax.set_ylabel('File Size (MB, linear scale)', fontsize=12)
+    ax.set_title('Size Before/After Compression Comparison Across Formats (Linear, Stacked)', fontsize=16, fontweight='bold')
+    ax.set_xticks(x)
+    labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    # 合并图例
+    handles, labels_ = ax.get_legend_handles_labels()
+    by_label = dict(zip(labels_, handles))
+    ax.legend(by_label.values(), by_label.keys())
+    ax.grid(True, alpha=0.3, which='both', zorder=1)
+    ax.set_yscale('linear')
+    plt.tight_layout()
+    save_plot_as_html(fig, 'Charts/all_format_size_before_after_linear.html', 'Size Before/After Compression Comparison Across Formats (Linear, Stacked)', 'Comparison of file size before/after compression for each format (linear scale, stacked, missing data marked)')
+
 def main():
     """Main function"""
     print("Starting to generate statistical reports...")
@@ -1164,7 +1253,9 @@ def main():
     create_model_format_compression_ratio_chart(models_data)
     
     print("\nGenerating all-format size before/after comparison report...")
-    create_all_format_size_before_after(models_data)
+    create_all_format_size_before(models_data)
+    print("\nGenerating all-format size before/after (linear, stacked) comparison report...")
+    create_all_format_size_before_after_linear(models_data)
     
     print("\nGenerating peak memory usage report...")
     create_peak_memory_usage(models_data)
