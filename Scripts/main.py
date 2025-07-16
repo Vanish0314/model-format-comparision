@@ -920,18 +920,18 @@ def create_combined_report(models_data):
     # 2. 合并后的All-Format Size Before/After
     # 复用新版create_all_format_size_before_after
     # 这里直接加载图片
-    if os.path.exists('Charts/all_format_size_before_after.html'):
+    if os.path.exists('Charts/all_format_size_before_after.png'):
         fig = plt.figure()
-        img = mpimg.imread('Charts/all_format_size_before_after.html')
+        img = mpimg.imread('Charts/all_format_size_before_after.png')
         plt.imshow(img)
         plt.axis('off')
         figs.append(fig)
         titles.append('Size Before/After Compression Comparison Across Formats')
         descriptions.append('Comparison of file size before/after compression for each format (log scale, missing data marked)')
     # 3. Peak Memory Usage
-    if os.path.exists('Charts/peak_memory_usage.html'):
+    if os.path.exists('Charts/peak_memory_usage.png'):
         fig = plt.figure()
-        img = mpimg.imread('Charts/peak_memory_usage.html')
+        img = mpimg.imread('Charts/peak_memory_usage.png')
         plt.imshow(img)
         plt.axis('off')
         figs.append(fig)
@@ -1010,6 +1010,7 @@ def create_all_format_size_before_after(models_data):
         ax.set_yscale('log')
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/all_format_size_before_after.html', 'Size Before/After Compression Comparison Across Formats', 'Comparison of file size before/after compression for each format (log scale, missing data marked)')
+    fig.savefig('Charts/all_format_size_before_after.png', dpi=150, bbox_inches='tight')
 
 # 2. 单独输出Peak Memory Usage
 
@@ -1063,6 +1064,7 @@ def create_peak_memory_usage(models_data):
         ax.set_yscale('log')
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/peak_memory_usage.html', 'Peak Memory Usage', 'Peak memory usage for each model and format (log scale, missing data marked)')
+    fig.savefig('Charts/peak_memory_usage.png', dpi=150, bbox_inches='tight')
 
 # 3. 修改Per-Format Stats等有MB和%单位的图表为双y轴
 # 以create_per_format_stats为例，其他类似图表可仿照修改
