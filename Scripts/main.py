@@ -15,7 +15,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 def load_raw_data():
     """Load all model data from RawData directory"""
-    with open('RawData/all_models_data.json', 'r', encoding='utf-8') as f:
+    with open('../RawData/all_models_data.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 
 def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
@@ -908,37 +908,233 @@ def create_combined_report(models_data):
         plt.close(fig)
         return img_b64
 
-    figs = []
-    titles = []
-    descriptions = []
-    # 1. Per-Format Statistics
-    formats = ['fbx', 'obj', 'glTF', 'glb']
-    for fmt in formats:
-        # ... existing code ...
-        # 复用新版create_per_format_stats，已自动保存HTML
-        pass
-    # 2. 合并后的All-Format Size Before/After
-    # 复用新版create_all_format_size_before_after
-    # 这里直接加载图片
-    if os.path.exists('Charts/all_format_size_before_after.png'):
-        fig = plt.figure()
-        img = mpimg.imread('Charts/all_format_size_before_after.png')
-        plt.imshow(img)
-        plt.axis('off')
-        figs.append(fig)
-        titles.append('Size Before/After Compression Comparison Across Formats')
-        descriptions.append('Comparison of file size before/after compression for each format (log scale, missing data marked)')
-    # 3. Peak Memory Usage
-    if os.path.exists('Charts/peak_memory_usage.png'):
-        fig = plt.figure()
-        img = mpimg.imread('Charts/peak_memory_usage.png')
-        plt.imshow(img)
-        plt.axis('off')
-        figs.append(fig)
-        titles.append('Peak Memory Usage')
-        descriptions.append('Peak memory usage for each model and format (log scale, missing data marked)')
-    # 其他图表同理
-    # ... existing code ...
+    # 确保 Charts 目录存在
+    os.makedirs('Charts', exist_ok=True)
+    
+    # 生成所有需要的图表
+    print("Generating individual charts for combined report...")
+    
+    # 1. 生成 Per-Format Statistics
+    create_per_format_stats(models_data)
+    
+    # 2. 生成 All-Format Size Before/After
+    create_all_format_size_before_after(models_data)
+    
+    # 3. 生成 Peak Memory Usage
+    create_peak_memory_usage(models_data)
+    
+    # 4. 生成 Import Time Comparison
+    create_import_time_comparison(models_data)
+    
+    # 5. 生成 Compression and Texture Ratio
+    create_compression_texture_ratio(models_data)
+    
+    # 6. 生成 Model-Format Compression Ratio
+    create_model_format_compression_ratio_chart(models_data)
+    
+    # 创建综合报告 HTML
+    html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Model Format Analysis Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .section h2 {
+            color: #34495e;
+            margin-top: 0;
+            font-size: 1.8em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .section p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .chart-container iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .nav-links {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .nav-links a {
+            display: inline-block;
+            margin: 0 15px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #2980b9;
+        }
+        .summary {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .summary h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .summary ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .summary li {
+            margin: 5px 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Combined Model Format Analysis Report</h1>
+        
+        <div class="summary">
+            <h3>Report Summary</h3>
+            <p>This comprehensive report provides detailed analysis of 3D model performance across different file formats (FBX, OBJ, glTF, GLB). The analysis includes:</p>
+            <ul>
+                <li><strong>Per-Format Statistics:</strong> Detailed metrics for each format including file sizes, compression ratios, and texture proportions</li>
+                <li><strong>All-Format Size Comparison:</strong> Before and after compression file sizes across all formats</li>
+                <li><strong>Model-Format Compression Ratio:</strong> Compression efficiency analysis for each model-format combination</li>
+                <li><strong>Compression Ratio and Texture Size Analysis:</strong> Detailed breakdown of compression performance and texture impact</li>
+                <li><strong>File Size and Memory Usage Comparison:</strong> Comprehensive comparison of file sizes and memory consumption</li>
+                <li><strong>Import Time Analysis:</strong> Performance comparison of import times across formats</li>
+            </ul>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Back to Main Report</a>
+            <a href="summary_report.html">Summary Report</a>
+        </div>
+
+        <div class="section">
+            <h2>1. Per-Format Statistics</h2>
+            <p>Detailed statistics for each file format showing file sizes, compression ratios, and texture proportions.</p>
+            <div class="chart-container">
+                <iframe src="fbx_stats.html"></iframe>
+            </div>
+            <div class="chart-container">
+                <iframe src="obj_stats.html"></iframe>
+            </div>
+            <div class="chart-container">
+                <iframe src="glTF_stats.html"></iframe>
+            </div>
+            <div class="chart-container">
+                <iframe src="glb_stats.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>2. All-Format Size Before/After Compression</h2>
+            <p>Comparison of file sizes before and after compression across all formats for each model.</p>
+            <div class="chart-container">
+                <iframe src="all_format_size_before_after.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>3. Model-Format Compression Ratio</h2>
+            <p>Compression ratio analysis showing the efficiency of each format for different models.</p>
+            <div class="chart-container">
+                <iframe src="model_format_compression_ratio.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. Compression Ratio and Texture Size Analysis</h2>
+            <p>Detailed analysis of compression ratios and texture size proportions across formats.</p>
+            <div class="chart-container">
+                <iframe src="compression_texture_ratio.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>5. File Size and Memory Usage Comparison</h2>
+            <p>Comprehensive comparison of file sizes and peak memory usage across all formats.</p>
+            <div class="chart-container">
+                <iframe src="size_memory_comparison.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>6. Peak Memory Usage</h2>
+            <p>Analysis of peak memory consumption for each model and format combination.</p>
+            <div class="chart-container">
+                <iframe src="peak_memory_usage.html"></iframe>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>7. Import Time Comparison</h2>
+            <p>Performance comparison of import times across different file formats.</p>
+            <div class="chart-container">
+                <iframe src="import_time_comparison.html"></iframe>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Back to Main Report</a>
+            <a href="summary_report.html">Summary Report</a>
+        </div>
+    </div>
+</body>
+</html>
+    """
+    
+    # 保存综合报告
+    with open('Charts/combined_report.html', 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    
+    print("Combined report generated: Charts/combined_report.html")
 
 def create_all_format_size_before_after(models_data):
     """合并Size Before/After Compression为一张分组柱状图"""
