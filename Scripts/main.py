@@ -1258,6 +1258,81 @@ def create_per_format_stats(models_data):
         plt.tight_layout()
         save_plot_as_html(fig, f'Charts/{fmt}_stats.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for {fmt} (log/linear scale, missing data marked)')
 
+def create_all_format_size_before_after_linear(models_data):
+    """合并Size Before/After Compression为一张分组柱状图（线性坐标轴，高度加大）"""
+    formats = ['fbx', 'obj', 'glTF']
+    models = []
+    face_counts = []
+    texture_counts = []
+    data_before = {fmt: [] for fmt in formats}
+    data_after = {fmt: [] for fmt in formats}
+    for model_name, model_data in models_data.items():
+        has_data = any(fmt in model_data['formats'] and (
+            model_data['formats'][fmt].get('size_before_mb', None) not in [None, 0] or
+            model_data['formats'][fmt].get('size_after_mb', None) not in [None, 0]) for fmt in formats)
+        if has_data:
+            models.append(model_name)
+            face_counts.append(model_data['face_count_k'])
+            texture_counts.append(model_data['texture_count'])
+            for fmt in formats:
+                if fmt in model_data['formats']:
+                    data_before[fmt].append(model_data['formats'][fmt].get('size_before_mb', None))
+                    data_after[fmt].append(model_data['formats'][fmt].get('size_after_mb', None))
+                else:
+                    data_before[fmt].append(None)
+                    data_after[fmt].append(None)
+    # 过滤无数据模型
+    models, face_counts, texture_counts, keep_indices = filter_models_by_nonempty(models_data, data_before, models, face_counts)
+    for fmt in formats:
+        data_before[fmt] = [data_before[fmt][i] for i in keep_indices]
+        data_after[fmt] = [data_after[fmt][i] for i in keep_indices]
+    x = np.arange(len(models))
+    width = 0.12
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 18))  # 高度大幅增加
+    base_colors = plt.get_cmap('tab10').colors
+    for i, fmt in enumerate(formats):
+        offset = (i - 1.5) * width * 2
+        before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
+        after_vals = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
+        texture_before = [
+            models_data[m]['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in models_data[m]['formats'] else 0
+            for m in models
+        ]
+        texture_after = [
+            models_data[m]['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in models_data[m]['formats'] else 0
+            for m in models
+        ]
+        # 堆叠柱状图：先画纹理部分，再画非纹理部分
+        bars1_texture = ax.bar(x + offset, texture_before, width, label=f'{fmt} Before (Texture)', color=tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1)), zorder=3)
+        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
+        bars1 = ax.bar(x + offset, non_texture_before, width, bottom=texture_before, label=f'{fmt} Before (Non-Texture)', color=base_colors[i], zorder=2)
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, label=f'{fmt} After (Texture)', color=tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1)), zorder=3)
+        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, bottom=texture_after, label=f'{fmt} After (Non-Texture)', color=tuple(np.clip(np.array(base_colors[i]) + 0.3, 0, 1)), zorder=2)
+        # 标注：总值标注在柱子最顶端
+        for idx, (bar, v) in enumerate(zip(bars1, before_vals)):
+            if v is None:
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+            elif v not in [None, 0]:
+                # 标注在最顶端
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height() + bars1_texture[idx].get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+        for idx, (bar, v) in enumerate(zip(bars2, after_vals)):
+            if v is None:
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+            elif v not in [None, 0]:
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height() + bars2_texture[idx].get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+    ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+    ax.set_ylabel('File Size (MB, linear scale)', fontsize=12)
+    ax.set_title('Size Before/After Compression Comparison Across Formats (Linear)', fontsize=16, fontweight='bold')
+    ax.set_xticks(x)
+    labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, texture_counts)]
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.legend()
+    ax.grid(True, alpha=0.3, which='both', zorder=1)
+    plt.tight_layout()
+    save_plot_as_html(fig, 'Charts/all_format_size_before_after_linear.html', 'Size Before/After Compression Comparison Across Formats (Linear)', 'Comparison of file size before/after compression for each format (linear scale, missing data marked)')
+    fig.savefig('Charts/all_format_size_before_after_linear.png', dpi=150, bbox_inches='tight')
+
 def main():
     print("Starting to generate statistical reports...")
     models_data = load_raw_data()
@@ -1286,6 +1361,8 @@ def main():
     create_summary_report(models_data)
     print("\nGenerating combined report...")
     create_combined_report(models_data)
+    print("\nGenerating all-format size before/after comparison report (linear scale)...")
+    create_all_format_size_before_after_linear(models_data)
     print("\nAll reports generated! Please check the HTML files in the Charts directory.")
     print("Open Charts/index.html to view the summary report.")
 
