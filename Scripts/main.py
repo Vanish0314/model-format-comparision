@@ -15,7 +15,11 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 
 def load_raw_data():
     """Load all model data from RawData directory"""
-    with open('../RawData/all_models_data.json', 'r', encoding='utf-8') as f:
+    # 获取当前脚本所在目录
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(base_dir, '../RawData/all_models_data.json')
+    data_path = os.path.normpath(data_path)
+    with open(data_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
