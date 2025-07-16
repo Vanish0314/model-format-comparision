@@ -21,7 +21,7 @@ def filter_models_by_nonempty(models_data: Dict[str, Any], data_by_format: Dict[
 
 def create_import_time_comparison(models_data: Dict[str, Any]):
     models = []
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     data_by_format = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
@@ -65,7 +65,7 @@ def create_import_time_comparison(models_data: Dict[str, Any]):
     ax.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel = 'Import Time (seconds, log scale)' if use_log else 'Import Time (seconds, linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
-    ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
+    ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
