@@ -1,199 +1,199 @@
 {
   "BistroExterior_2832k_405tex": {
-    "face_count_k": 2832,
-    "texture_count": 405,
+    "faceCountK": 2832,
+    "textureCount": 405,
     "formats": {
       "fbx": {
-        "size_before_mb": 1037.0,
-        "size_after_mb": 587.0,
-        "peak_memory_mb": 768.0,
-        "texture_size_mb": 925.0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 193563
+        "sizeBeforeZipMB": 1037.0,
+        "sizeAfterZipMB": 587.0,
+        "peakMemoryMB": 768.0,
+        "textureSizeBeforeZipMB": 925.0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 193563
       },
       "obj": {
-        "size_before_mb": 1220.0,
-        "size_after_mb": 551.0,
-        "peak_memory_mb": 2100.0,
-        "texture_size_mb": 925.0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 82267
+        "sizeBeforeZipMB": 1220.0,
+        "sizeAfterZipMB": 551.0,
+        "peakMemoryMB": 2100.0,
+        "textureSizeBeforeZipMB": 925.0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 82267
       },
       "glTF": {
-        "size_before_mb": 942.0,
-        "size_after_mb": 865.0,
-        "peak_memory_mb": 382.0,
-        "texture_size_mb": 815.0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 6486,
-        "load_time_ms": 140152,
-        "load_memory_mb": 5324.8
+        "sizeBeforeZipMB": 942.0,
+        "sizeAfterZipMB": 865.0,
+        "peakMemoryMB": 382.0,
+        "textureSizeBeforeZipMB": 815.0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 6486,
+        "loadTimeMs": 140152,
+        "loadPeakMemoryMB": 5324.8
       },
       "glb": {
-        "size_before_mb": 941.0,
-        "size_after_mb": 865.0,
-        "peak_memory_mb": 15700.0,
-        "texture_size_mb": 815.0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 18910,
-        "load_time_ms": 95290,
-        "load_memory_mb": 14950.4
+        "sizeBeforeZipMB": 941.0,
+        "sizeAfterZipMB": 865.0,
+        "peakMemoryMB": 15700.0,
+        "textureSizeBeforeZipMB": 815.0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 18910,
+        "loadTimeMs": 95290,
+        "loadPeakMemoryMB": 14950.4
       }
     }
   },
   "BistroInterior_1293k_201tex": {
-    "face_count_k": 1293,
-    "texture_count": 405,
+    "faceCountK": 1293,
+    "textureCount": 405,
     "formats": {
       "fbx": {
-        "size_before_mb": 533,
-        "size_after_mb": 268,
-        "peak_memory_mb": 390,
-        "texture_size_mb": 488,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 100656
+        "sizeBeforeZipMB": 533,
+        "sizeAfterZipMB": 268,
+        "peakMemoryMB": 390,
+        "textureSizeBeforeZipMB": 488,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 100656
       },
       "obj": {
-        "size_before_mb": 489,
-        "size_after_mb": 384,
-        "peak_memory_mb": 1331.2,
-        "texture_size_mb": 357,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 157902
+        "sizeBeforeZipMB": 489,
+        "sizeAfterZipMB": 384,
+        "peakMemoryMB": 1331.2,
+        "textureSizeBeforeZipMB": 357,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 157902
       },
       "glTF": {
-        "size_before_mb": 402,
-        "size_after_mb": 374,
-        "peak_memory_mb": 225,
-        "texture_size_mb": 357,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 8477,
-        "load_time_ms": 74397,
-        "load_memory_mb": 2457.6
+        "sizeBeforeZipMB": 402,
+        "sizeAfterZipMB": 374,
+        "peakMemoryMB": 225,
+        "textureSizeBeforeZipMB": 357,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 8477,
+        "loadTimeMs": 74397,
+        "loadPeakMemoryMB": 2457.6
       },
       "glb": {
-        "size_before_mb": 402,
-        "size_after_mb": 374,
-        "peak_memory_mb": 7065.6,
-        "texture_size_mb": 357,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 13620,
-        "load_time_ms": 52072,
-        "load_memory_mb": 7172.1
+        "sizeBeforeZipMB": 402,
+        "sizeAfterZipMB": 374,
+        "peakMemoryMB": 7065.6,
+        "textureSizeBeforeZipMB": 357,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 13620,
+        "loadTimeMs": 52072,
+        "loadPeakMemoryMB": 7172.1
       }
     }
   },
   "AbandonedWarehouse_993k_36tex": {
-    "face_count_k": 993,
-    "texture_count": 36,
+    "faceCountK": 993,
+    "textureCount": 36,
     "formats": {
       "fbx": {
-        "size_before_mb": 92.7,
-        "size_after_mb": 87.6,
-        "peak_memory_mb": 284,
-        "texture_size_mb": 69.6,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 71065
+        "sizeBeforeZipMB": 92.7,
+        "sizeAfterZipMB": 87.6,
+        "peakMemoryMB": 284,
+        "textureSizeBeforeZipMB": 69.6,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 71065
       },
       "obj": {
-        "size_before_mb": 157.0,
-        "size_after_mb": 86.0,
-        "peak_memory_mb": 1024,
-        "texture_size_mb": 69.6,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 116241
+        "sizeBeforeZipMB": 157.0,
+        "sizeAfterZipMB": 86.0,
+        "peakMemoryMB": 1024,
+        "textureSizeBeforeZipMB": 69.6,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 116241
       },
       "glTF": {
-        "size_before_mb": 100.0,
-        "size_after_mb": 75.7,
-        "peak_memory_mb": 170.0,
-        "texture_size_mb": 67.1,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 473,
-        "load_time_ms": 18291,
-        "load_memory_mb": 478
+        "sizeBeforeZipMB": 100.0,
+        "sizeAfterZipMB": 75.7,
+        "peakMemoryMB": 170.0,
+        "textureSizeBeforeZipMB": 67.1,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 473,
+        "loadTimeMs": 18291,
+        "loadPeakMemoryMB": 478
       },
       "glb": {
-        "size_before_mb": 100.0,
-        "size_after_mb": 75.7,
-        "peak_memory_mb": 275,
-        "texture_size_mb": 67.1,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 18910,
-        "load_time_ms": 15977,
-        "load_memory_mb": 511
+        "sizeBeforeZipMB": 100.0,
+        "sizeAfterZipMB": 75.7,
+        "peakMemoryMB": 275,
+        "textureSizeBeforeZipMB": 67.1,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 18910,
+        "loadTimeMs": 15977,
+        "loadPeakMemoryMB": 511
       }
     }
   },
   "BurjKhalifaDubai_662k_1tex": {
-    "face_count_k": 662,
-    "texture_count": 1,
+    "faceCountK": 662,
+    "textureCount": 1,
     "formats": {
       "fbx": {
-        "size_before_mb": 12,
-        "size_after_mb": 10,
-        "peak_memory_mb": 128,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 44600
+        "sizeBeforeZipMB": 12,
+        "sizeAfterZipMB": 10,
+        "peakMemoryMB": 128,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 44600
       },
       "obj": {
-        "size_before_mb": 50.6,
-        "size_after_mb": 7.23,
-        "peak_memory_mb": 493,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 64334
+        "sizeBeforeZipMB": 50.6,
+        "sizeAfterZipMB": 7.23,
+        "peakMemoryMB": 493,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 64334
       },
       "glTF": {
-        "size_before_mb": 27.2,
-        "size_after_mb": 4.74,
-        "peak_memory_mb": 52,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 181,
-        "load_time_ms": 2367,
-        "load_memory_mb": 61
+        "sizeBeforeZipMB": 27.2,
+        "sizeAfterZipMB": 4.74,
+        "peakMemoryMB": 52,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 181,
+        "loadTimeMs": 2367,
+        "loadPeakMemoryMB": 61
       },
       "glb": {
-        "size_before_mb": 27.2,
-        "size_after_mb": 4.74,
-        "peak_memory_mb": 40,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487,
-        "import_time_ms": 174,
-        "load_time_ms": 2457,
-        "load_memory_mb": 84
+        "sizeBeforeZipMB": 27.2,
+        "sizeAfterZipMB": 4.74,
+        "peakMemoryMB": 40,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487,
+        "importTimeMs": 174,
+        "loadTimeMs": 2457,
+        "loadPeakMemoryMB": 84
       }
     }
   },
   "Dragon": {
-    "face_count_k": 38,
-    "texture_count": 0,
+    "faceCountK": 38,
+    "textureCount": 0,
     "formats": {
       "fbx": {
-        "size_before_mb": 2.26,
-        "size_after_mb": 1.80,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487
+        "sizeBeforeZipMB": 2.26,
+        "sizeAfterZipMB": 1.80,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487
       },
       "obj": {
-        "size_before_mb": 3.13,
-        "size_after_mb": 0.98,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487
+        "sizeBeforeZipMB": 3.13,
+        "sizeAfterZipMB": 0.98,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487
       },
       "glTF": {
-        "size_before_mb": 1.63,
-        "size_after_mb": 0.98,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487
+        "sizeBeforeZipMB": 1.63,
+        "sizeAfterZipMB": 0.98,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487
       },
       "glb": {
-        "size_before_mb": 1.63,
-        "size_after_mb": 0.98,
-        "texture_size_mb": 0,
-        "texture_size_after_mb": 487
+        "sizeBeforeZipMB": 1.63,
+        "sizeAfterZipMB": 0.98,
+        "textureSizeBeforeZipMB": 0,
+        "textureSizeAfterZipMB": 487
       }
     }
   }

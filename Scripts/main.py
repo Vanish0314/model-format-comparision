@@ -57,7 +57,7 @@ def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
 def create_import_time_comparison(models_data):
     """Create import time comparison chart (log/linear scale + missing annotation)"""
     models = []
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     data_by_format = {fmt: [] for fmt in formats}
     face_counts = []
     valid_indices = []
@@ -102,7 +102,7 @@ def create_import_time_comparison(models_data):
     ax.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel = 'Import Time (seconds, log scale)' if use_log else 'Import Time (seconds, linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
-    ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
+    ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
@@ -116,7 +116,7 @@ def create_import_time_comparison(models_data):
 def create_size_memory_comparison(models_data):
     """Create material size and memory usage comparison chart (log/linear scale + missing annotation)"""
     models = []
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     size_before_data = {fmt: [] for fmt in formats}
     size_after_data = {fmt: [] for fmt in formats}
     memory_data = {fmt: [] for fmt in formats}
@@ -236,7 +236,7 @@ def create_size_memory_comparison(models_data):
 def create_compression_texture_ratio(models_data):
     """Create combined compression ratio and texture size proportion chart (log scale + missing annotation)"""
     models = []
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     compression_ratio_data = {fmt: [] for fmt in formats}
     texture_ratio_data = {fmt: [] for fmt in formats}
     face_counts = []
@@ -515,7 +515,7 @@ def save_plot_as_html(fig, filepath, title, description):
 
 def create_model_format_compression_ratio_chart(models_data):
     """Create a chart showing compression ratio for each model and each format."""
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
     data_by_format = {fmt: [] for fmt in formats}
@@ -720,7 +720,7 @@ def create_summary_report(models_data):
 
 # New: One chart per format, horizontal axis is model, bars are size before compression, size after compression, compression ratio, texture ratio
 def create_per_format_stats(models_data):
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     for fmt in formats:
         models = []
         face_counts = []
@@ -796,7 +796,7 @@ def create_per_format_stats(models_data):
 
 # New: Horizontal axis is model, bars are size before compression for all formats
 def create_all_format_size_before(models_data):
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
     texture_counts = []
@@ -851,7 +851,7 @@ def create_all_format_size_before(models_data):
 
 # New: Horizontal axis is model, bars are size after compression for all formats
 def create_all_format_size_after(models_data):
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
     texture_counts = []
@@ -1023,7 +1023,7 @@ def create_combined_report(models_data):
 
 def create_all_format_size_before_after(models_data):
     """合并Size Before/After Compression为一张分组柱状图"""
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
     texture_counts = []
@@ -1058,21 +1058,56 @@ def create_all_format_size_before_after(models_data):
         offset = (i - 1.5) * width * 2
         before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
         after_vals = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
+        # 新增：获取纹理数据
+        texture_before = [
+            model_data['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in model_data['formats'] else 0
+            for model_name, model_data in zip(models, [models_data[m] for m in models])
+        ]
+        texture_after = [
+            model_data['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in model_data['formats'] else 0
+            for model_name, model_data in zip(models, [models_data[m] for m in models])
+        ]
         # before: 主色，after: 明度降低
         color_before = base_colors[i]
         color_after = tuple(np.clip(np.array(base_colors[i]) + 0.3, 0, 1))
-        bars1 = ax.bar(x + offset, before_vals, width, label=f'{fmt} Before', color=color_before, zorder=2)
-        bars2 = ax.bar(x + offset + width, after_vals, width, label=f'{fmt} After', color=color_after, zorder=2)
-        for bar, v in zip(bars1, data_before[fmt]):
+        color_before_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1))
+        color_after_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1))
+        # 堆叠柱状图：先画非纹理部分，再画纹理部分
+        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
+        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Non-Texture)', color=color_before, zorder=2)
+        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture)', color=color_before_texture, zorder=3)
+        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Non-Texture)', color=color_after, zorder=2)
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture)', color=color_after_texture, zorder=3)
+        # 标注
+        for idx, (bar, v, t) in enumerate(zip(bars1, before_vals, texture_before)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
-        for bar, v in zip(bars2, data_after[fmt]):
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+                # 纹理占比
+                if t > 0 and v > 0:
+                    percent = t / v * 100
+                    txt = f'{percent:.0f}%\n{t:.1f}'
+                    if t > v * 0.18:  # 足够空间
+                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                    else:
+                        # 用线连到外部
+                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+        for idx, (bar, v, t) in enumerate(zip(bars2, after_vals, texture_after)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+                if t > 0 and v > 0:
+                    percent = t / v * 100
+                    txt = f'{percent:.0f}%\n{t:.1f}'
+                    if t > v * 0.18:
+                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                    else:
+                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_before[fmt] if v not in [None, 0]]
@@ -1097,7 +1132,7 @@ def create_all_format_size_before_after(models_data):
 
 def create_peak_memory_usage(models_data):
     """只输出Peak Memory Usage，剔除无数据格式"""
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
     memory_data = {fmt: [] for fmt in formats}
@@ -1151,7 +1186,7 @@ def create_peak_memory_usage(models_data):
 # 以create_per_format_stats为例，其他类似图表可仿照修改
 
 def create_per_format_stats(models_data):
-    formats = ['fbx', 'obj', 'glTF', 'glb']
+    formats = ['fbx', 'obj', 'glTF']
     for fmt in formats:
         models = []
         face_counts = []
