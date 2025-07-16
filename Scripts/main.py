@@ -63,7 +63,7 @@ def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
                     break
         if has_data:
             keep_indices.append(i)
-    return [models[i] for i in keep_indices], [face_counts[i] for i in keep_indices], [model_data['texture_count'] for i, model_name in enumerate(models) if i in keep_indices], keep_indices
+    return [models[i] for i in keep_indices], [face_counts[i] for i in keep_indices], [model_data['textureCount'] for i, model_name in enumerate(models) if i in keep_indices], keep_indices
 
 def create_import_time_comparison(models_data):
     """Create import time comparison chart (log/linear scale + missing annotation)"""
@@ -79,7 +79,7 @@ def create_import_time_comparison(models_data):
         )
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             valid_indices.append(idx)
     for fmt in formats:
         for idx in valid_indices:
@@ -115,7 +115,7 @@ def create_import_time_comparison(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -142,7 +142,7 @@ def create_size_memory_comparison(models_data):
                     has_data = True
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             valid_indices.append(idx)
     for fmt in formats:
         for idx in valid_indices:
@@ -186,7 +186,7 @@ def create_size_memory_comparison(models_data):
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('File Size Before Compression', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    ax1.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
+    ax1.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log1:
@@ -210,7 +210,7 @@ def create_size_memory_comparison(models_data):
     ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('File Size After Compression', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
-    ax2.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
+    ax2.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log2:
@@ -235,7 +235,7 @@ def create_size_memory_comparison(models_data):
     ax3.set_ylabel(ylabel3, fontsize=12)
     ax3.set_title('Peak Memory Usage', fontsize=14, fontweight='bold')
     ax3.set_xticks(x)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax3.set_xticklabels(labels, rotation=45, ha='right')
     ax3.legend()
     ax3.grid(True, alpha=0.3, which='both', zorder=1)
@@ -262,7 +262,7 @@ def create_compression_texture_ratio(models_data):
                     has_data = True
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             valid_indices.append(idx)
     for fmt in formats:
         for idx in valid_indices:
@@ -333,7 +333,7 @@ def create_compression_texture_ratio(models_data):
     ax.set_xlabel('Model (Face Count)', fontsize=12)
     ax.set_title('Compression Ratio and Texture Size Analysis', fontsize=16, fontweight='bold')
     ax.set_xticks(x + width)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -361,7 +361,7 @@ def create_gltf_glb_comparison(models_data):
                     has_data = True
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             valid_indices.append(idx)
     for fmt in formats:
         for idx in valid_indices:
@@ -405,7 +405,7 @@ def create_gltf_glb_comparison(models_data):
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('glTF vs GLB: Load Time Comparison', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax1.set_xticklabels(labels, rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
@@ -549,7 +549,7 @@ def create_model_format_compression_ratio_chart(models_data):
                 data_by_format[fmt].append(None)
         if has_any:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
     # Filter out models where all bars are empty
     models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
@@ -576,7 +576,7 @@ def create_model_format_compression_ratio_chart(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Compression Ratio by Model and Format', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -693,8 +693,8 @@ def create_summary_report(models_data):
         html_content += f"""
                 <tr>
                     <td>{model_name}</td>
-                    <td>{model_data['face_count_k']}k</td>
-                    <td>{model_data['texture_count']}</td>
+                    <td>{model_data['faceCountK']}k</td>
+                    <td>{model_data['textureCount']}</td>
                     <td>{formats}</td>
                 </tr>
 """
@@ -751,8 +751,8 @@ def create_per_format_stats(models_data):
                 # 只要四项之一有数据就保留
                 if any(x not in [None, 0] for x in [sb, sa, cr, tr]):
                     models.append(model_name)
-                    face_counts.append(model_data['face_count_k'])
-                    texture_counts.append(model_data['texture_count'])
+                    face_counts.append(model_data['faceCountK'])
+                    texture_counts.append(model_data['textureCount'])
                     size_before.append(sb)
                     size_after.append(sa)
                     compression_ratio.append(cr)
@@ -816,8 +816,8 @@ def create_all_format_size_before(models_data):
         has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('sizeBeforeZipMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
-            texture_counts.append(model_data['texture_count'])
+            face_counts.append(model_data['faceCountK'])
+            texture_counts.append(model_data['textureCount'])
             for fmt in formats:
                 if fmt in model_data['formats']:
                     v = model_data['formats'][fmt].get('sizeBeforeZipMB', None)
@@ -871,8 +871,8 @@ def create_all_format_size_after(models_data):
         has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('sizeAfterZipMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
-            texture_counts.append(model_data['texture_count'])
+            face_counts.append(model_data['faceCountK'])
+            texture_counts.append(model_data['textureCount'])
             for fmt in formats:
                 if fmt in model_data['formats']:
                     v = model_data['formats'][fmt].get('sizeAfterZipMB', None)
@@ -1046,8 +1046,8 @@ def create_all_format_size_before_after(models_data):
             model_data['formats'][fmt].get('sizeAfterZipMB', None) not in [None, 0]) for fmt in formats)
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
-            texture_counts.append(model_data['texture_count'])
+            face_counts.append(model_data['faceCountK'])
+            texture_counts.append(model_data['textureCount'])
             for fmt in formats:
                 if fmt in model_data['formats']:
                     data_before[fmt].append(model_data['formats'][fmt].get('sizeBeforeZipMB', None))
@@ -1116,7 +1116,7 @@ def create_peak_memory_usage(models_data):
         has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('peakMemoryMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             for fmt in formats:
                 if fmt in model_data['formats']:
                     memory_data[fmt].append(model_data['formats'][fmt].get('peakMemoryMB', None))
@@ -1148,7 +1148,7 @@ def create_peak_memory_usage(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Peak Memory Usage', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["textureCount"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -1181,8 +1181,8 @@ def create_per_format_stats(models_data):
                 tr = (tc / sb) * 100 if sb not in [None, 0] and tc not in [None, 0] else None
                 if any(x not in [None, 0] for x in [sb, sa, cr, tr]):
                     models.append(model_name)
-                    face_counts.append(model_data['face_count_k'])
-                    texture_counts.append(model_data['texture_count'])
+                    face_counts.append(model_data['faceCountK'])
+                    texture_counts.append(model_data['textureCount'])
                     size_before.append(sb)
                     size_after.append(sa)
                     compression_ratio.append(cr)
