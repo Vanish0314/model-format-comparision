@@ -1027,7 +1027,7 @@ def create_combined_report(models_data):
     print("Combined report generated: Charts/combined_report.html")
 
 def create_all_format_size_before_after(models_data):
-    """合并Size Before/After Compression为一张分组柱状图"""
+    """合并Size Before/After Compression为一张分组柱状图（下半为纹理，上半为非纹理，标注修正）"""
     formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
@@ -1049,7 +1049,6 @@ def create_all_format_size_before_after(models_data):
                 else:
                     data_before[fmt].append(None)
                     data_after[fmt].append(None)
-    # 过滤无数据模型
     models, face_counts, textureCounts, keep_indices = filter_models_by_nonempty(models_data, data_before, models, face_counts)
     for fmt in formats:
         data_before[fmt] = [data_before[fmt][i] for i in keep_indices]
@@ -1062,55 +1061,50 @@ def create_all_format_size_before_after(models_data):
         offset = (i - 1.5) * width * 2
         before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
         after_vals = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
-        texture_before = [
-            models_data[m]['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in models_data[m]['formats'] else 0
-            for m in models
-        ]
-        texture_after = [
-            models_data[m]['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in models_data[m]['formats'] else 0
-            for m in models
-        ]
+        texture_before = [models_data[m]['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in models_data[m]['formats'] else 0 for m in models]
+        texture_after = [models_data[m]['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in models_data[m]['formats'] else 0 for m in models]
+        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
+        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
         color_before = base_colors[i]
         color_after = tuple(np.clip(np.array(base_colors[i]) + 0.3, 0, 1))
         color_before_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1))
         color_after_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1))
-        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
-        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
-        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
-        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
-        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
-        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
-        # 标注
-        for idx, (bar, v, t) in enumerate(zip(bars1, before_vals, texture_before)):
+        # Before: 下半为纹理，上半为非纹理
+        bars1_texture = ax.bar(x + offset, texture_before, width, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
+        bars1 = ax.bar(x + offset, non_texture_before, width, bottom=texture_before, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
+        # After: 下半为纹理，上半为非纹理
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, bottom=texture_after, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
+        # 标注 before
+        for idx, (bar_tex, bar_fmt, v, t) in enumerate(zip(bars1_texture, bars1, before_vals, texture_before)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
             elif v not in [None, 0]:
-                # 原有：ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ...)
-                # 新增：将总值标注在柱子最顶端
-                total_height = non_texture_before[idx] + texture_before[idx]
-                ax.text(bar.get_x() + bar.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
-                # 纹理占比
-                if t > 0 and v > 0:
-                    percent = t / v * 100
-                    txt = f'{percent:.0f}%\n{t:.1f}'
-                    if t > v * 0.18:  # 足够空间
-                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
-                    else:
-                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
-                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
-        for idx, (bar, v, t) in enumerate(zip(bars2, after_vals, texture_after)):
-            if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
-            elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+                total_height = texture_before[idx] + non_texture_before[idx]
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
                 if t > 0 and v > 0:
                     percent = t / v * 100
                     txt = f'{percent:.0f}%\n{t:.1f}'
                     if t > v * 0.18:
-                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_y() + bar_tex.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
                     else:
-                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
-                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+                        ax.plot([bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_x() + bar_tex.get_width()/2. + 0.05], [bar_tex.get_y() + bar_tex.get_height(), bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2. + 0.08, bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+        # 标注 after
+        for idx, (bar_tex, bar_fmt, v, t) in enumerate(zip(bars2_texture, bars2, after_vals, texture_after)):
+            if v is None:
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+            elif v not in [None, 0]:
+                total_height = texture_after[idx] + non_texture_after[idx]
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
+                if t > 0 and v > 0:
+                    percent = t / v * 100
+                    txt = f'{percent:.0f}%\n{t:.1f}'
+                    if t > v * 0.18:
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_y() + bar_tex.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                    else:
+                        ax.plot([bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_x() + bar_tex.get_width()/2. + 0.05], [bar_tex.get_y() + bar_tex.get_height(), bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2. + 0.08, bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_before[fmt] if v not in [None, 0]]
@@ -1123,7 +1117,16 @@ def create_all_format_size_before_after(models_data):
     ax.set_xticks(x)
     labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, textureCounts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.legend()
+    handles, labels = ax.get_legend_handles_labels()
+    # 去重且顺序: Texture data在下，Format data在上
+    new_labels = []
+    new_handles = []
+    for want in ['Before (Texture data)', 'Before (Format data)', 'After (Texture data)', 'After (Format data)']:
+        for h, l in zip(handles, labels):
+            if want in l and l not in new_labels:
+                new_labels.append(l)
+                new_handles.append(h)
+    ax.legend(new_handles, new_labels)
     ax.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log:
         ax.set_yscale('log')
@@ -1134,7 +1137,7 @@ def create_all_format_size_before_after(models_data):
 # 新增：线性坐标轴+大高图
 
 def create_all_format_size_before_after_linear_tall(models_data):
-    """线性坐标轴+大高图的Size Before/After Compression分组柱状图"""
+    """线性坐标轴+大高图的Size Before/After Compression分组柱状图（下半为纹理，上半为非纹理，标注修正）"""
     formats = ['fbx', 'obj', 'glTF']
     models = []
     face_counts = []
@@ -1162,66 +1165,72 @@ def create_all_format_size_before_after_linear_tall(models_data):
         data_after[fmt] = [data_after[fmt][i] for i in keep_indices]
     x = np.arange(len(models))
     width = 0.12
-    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 32))  # 高度大幅提升
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 32))
     base_colors = plt.get_cmap('tab10').colors
     for i, fmt in enumerate(formats):
         offset = (i - 1.5) * width * 2
         before_vals = [v if v not in [None, 0] else 0 for v in data_before[fmt]]
         after_vals = [v if v not in [None, 0] else 0 for v in data_after[fmt]]
-        texture_before = [
-            models_data[m]['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in models_data[m]['formats'] else 0
-            for m in models
-        ]
-        texture_after = [
-            models_data[m]['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in models_data[m]['formats'] else 0
-            for m in models
-        ]
+        texture_before = [models_data[m]['formats'][fmt].get('textureSizeBeforeZipMB', 0) if fmt in models_data[m]['formats'] else 0 for m in models]
+        texture_after = [models_data[m]['formats'][fmt].get('textureSizeAfterZipMB', 0) if fmt in models_data[m]['formats'] else 0 for m in models]
+        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
+        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
         color_before = base_colors[i]
         color_after = tuple(np.clip(np.array(base_colors[i]) + 0.3, 0, 1))
         color_before_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7, 0, 1))
         color_after_texture = tuple(np.clip(np.array(base_colors[i]) * 0.7 + 0.3, 0, 1))
-        non_texture_before = [max(0, v-t) for v, t in zip(before_vals, texture_before)]
-        bars1 = ax.bar(x + offset, non_texture_before, width, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
-        bars1_texture = ax.bar(x + offset, texture_before, width, bottom=non_texture_before, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
-        non_texture_after = [max(0, v-t) for v, t in zip(after_vals, texture_after)]
-        bars2 = ax.bar(x + offset + width, non_texture_after, width, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
-        bars2_texture = ax.bar(x + offset + width, texture_after, width, bottom=non_texture_after, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
-        for idx, (bar, v, t) in enumerate(zip(bars1, before_vals, texture_before)):
+        # Before: 下半为纹理，上半为非纹理
+        bars1_texture = ax.bar(x + offset, texture_before, width, label=f'{fmt} Before (Texture data)', color=color_before_texture, zorder=3)
+        bars1 = ax.bar(x + offset, non_texture_before, width, bottom=texture_before, label=f'{fmt} Before (Format data)', color=color_before, zorder=2)
+        # After: 下半为纹理，上半为非纹理
+        bars2_texture = ax.bar(x + offset + width, texture_after, width, label=f'{fmt} After (Texture data)', color=color_after_texture, zorder=3)
+        bars2 = ax.bar(x + offset + width, non_texture_after, width, bottom=texture_after, label=f'{fmt} After (Format data)', color=color_after, zorder=2)
+        # 标注 before
+        for idx, (bar_tex, bar_fmt, v, t) in enumerate(zip(bars1_texture, bars1, before_vals, texture_before)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
             elif v not in [None, 0]:
-                total_height = non_texture_before[idx] + texture_before[idx]
-                ax.text(bar.get_x() + bar.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
+                total_height = texture_before[idx] + non_texture_before[idx]
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
                 if t > 0 and v > 0:
                     percent = t / v * 100
                     txt = f'{percent:.0f}%\n{t:.1f}'
                     if t > v * 0.18:
-                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_y() + bar_tex.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
                     else:
-                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
-                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
-        for idx, (bar, v, t) in enumerate(zip(bars2, after_vals, texture_after)):
+                        ax.plot([bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_x() + bar_tex.get_width()/2. + 0.05], [bar_tex.get_y() + bar_tex.get_height(), bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2. + 0.08, bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+        # 标注 after
+        for idx, (bar_tex, bar_fmt, v, t) in enumerate(zip(bars2_texture, bars2, after_vals, texture_after)):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=4)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4)
+                total_height = texture_after[idx] + non_texture_after[idx]
+                ax.text(bar_fmt.get_x() + bar_fmt.get_width()/2., total_height, f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=4, color='black', fontweight='bold')
                 if t > 0 and v > 0:
                     percent = t / v * 100
                     txt = f'{percent:.0f}%\n{t:.1f}'
                     if t > v * 0.18:
-                        ax.text(bar.get_x() + bar.get_width()/2., bar.get_y() + bar.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_y() + bar_tex.get_height(), txt, ha='center', va='center', fontsize=7, color='white', zorder=5)
                     else:
-                        ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
-                        ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+                        ax.plot([bar_tex.get_x() + bar_tex.get_width()/2., bar_tex.get_x() + bar_tex.get_width()/2. + 0.05], [bar_tex.get_y() + bar_tex.get_height(), bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
+                        ax.text(bar_tex.get_x() + bar_tex.get_width()/2. + 0.08, bar_tex.get_y() + bar_tex.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
     ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
     ax.set_ylabel('File Size (MB, linear scale)', fontsize=12)
     ax.set_title('Size Before/After Compression Comparison Across Formats (Linear Tall)', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
     labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, textureCounts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
-    ax.legend()
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = []
+    new_handles = []
+    for want in ['Before (Texture data)', 'Before (Format data)', 'After (Texture data)', 'After (Format data)']:
+        for h, l in zip(handles, labels):
+            if want in l and l not in new_labels:
+                new_labels.append(l)
+                new_handles.append(h)
+    ax.legend(new_handles, new_labels)
     ax.grid(True, alpha=0.3, which='both', zorder=1)
-    # 强制线性坐标轴
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/all_format_size_before_after_linear_tall.html', 'Size Before/After Compression Comparison Across Formats (Linear Tall)', 'Size before/after compression for each format (linear scale, tall figure, missing data marked)')
     fig.savefig('Charts/all_format_size_before_after_linear_tall.png', dpi=150, bbox_inches='tight')
