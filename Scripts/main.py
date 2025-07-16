@@ -1109,6 +1109,26 @@ def create_all_format_size_before_after(models_data):
                     else:
                         ax.plot([bar.get_x() + bar.get_width()/2., bar.get_x() + bar.get_width()/2. + 0.05], [bar.get_y() + bar.get_height(), bar.get_y() + bar.get_height() + max(v*0.08, 2)], color='black', lw=0.7, zorder=6)
                         ax.text(bar.get_x() + bar.get_width()/2. + 0.08, bar.get_y() + bar.get_height() + max(v*0.08, 2), txt, ha='left', va='bottom', fontsize=7, color='black', zorder=6)
+    # 修复：每组的总大小标注应在该组所有柱子的最高点
+    num_groups = len(models)
+    num_bars_per_group = len(formats) * 2  # before/after
+    for group_idx in range(num_groups):
+        # 计算每组所有柱子的顶端y坐标
+        tops = []
+        for i, fmt in enumerate(formats):
+            offset = (i - 1.5) * width * 2
+            # before
+            y1 = non_texture_before[group_idx] + texture_before[group_idx]
+            tops.append((x[group_idx] + offset, y1))
+            # after
+            y2 = non_texture_after[group_idx] + texture_after[group_idx]
+            tops.append((x[group_idx] + offset + width, y2))
+        # 找到最高的柱子
+        max_top = max(tops, key=lambda tup: tup[1])
+        # 标注总大小（最大before）
+        max_before = max([data_before[fmt][group_idx] if data_before[fmt][group_idx] not in [None, 0] else 0 for fmt in formats])
+        if max_before > 0:
+            ax.text(max_top[0], max_top[1], f'{max_before:.1f}', ha='center', va='bottom', fontsize=11, color='black', fontweight='bold', zorder=10)
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_before[fmt] if v not in [None, 0]]
