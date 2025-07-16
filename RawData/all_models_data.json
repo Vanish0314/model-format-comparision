@@ -46,19 +46,21 @@
         "size_after_mb": 268,
         "peak_memory_mb": 390,
         "texture_size_mb": 488,
-        "import_time_ms": 186490
+        "import_time_ms": 100656
       },
       "obj": {
         "size_before_mb": 489,
         "size_after_mb": 384,
-        "texture_size_mb": 357
+        "peak_memory_mb": 1331.2,
+        "texture_size_mb": 357,
+        "import_time_ms": 157902
       },
       "glTF": {
         "size_before_mb": 402,
         "size_after_mb": 374,
         "peak_memory_mb": 225,
         "texture_size_mb": 357,
-        "import_time_ms": 9962,
+        "import_time_ms": 8477,
         "load_time_ms": 74397,
         "load_memory_mb": 2457.6
       },
@@ -67,7 +69,7 @@
         "size_after_mb": 374,
         "peak_memory_mb": 7065.6,
         "texture_size_mb": 357,
-        "import_time_ms": 13792,
+        "import_time_ms": 13620,
         "load_time_ms": 52072,
         "load_memory_mb": 7172.1
       }
