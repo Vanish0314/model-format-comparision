@@ -13,14 +13,21 @@ from matplotlib.figure import Figure
 matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-def load_raw_data():
-    """Load all model data from RawData directory"""
-    # 获取当前脚本所在目录
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(base_dir, '../RawData/all_models_data.json')
-    data_path = os.path.normpath(data_path)
-    with open(data_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+from data_loader import load_raw_data
+from report_generators import (
+    create_import_time_comparison,
+    create_size_memory_comparison,
+    create_compression_texture_ratio,
+    create_gltf_glb_comparison,
+    create_model_format_compression_ratio_chart,
+    create_summary_report,
+    create_per_format_stats,
+    create_all_format_size_before,
+    create_all_format_size_after,
+    create_all_format_size_before_after,
+    create_peak_memory_usage,
+    create_combined_report
+)
 
 def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
     """
@@ -1342,41 +1349,33 @@ def create_per_format_stats(models_data):
         save_plot_as_html(fig, f'Charts/{fmt}_stats.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for {fmt} (log/linear scale, missing data marked)')
 
 def main():
-    """Main function"""
     print("Starting to generate statistical reports...")
-    
-    # Load raw data
     models_data = load_raw_data()
     print(f"Loaded data for {len(models_data)} models")
-    
-    # Generate various reports
     print("\nGenerating import time comparison report...")
     create_import_time_comparison(models_data)
-    
+    print("\nGenerating size and memory comparison report...")
+    create_size_memory_comparison(models_data)
     print("\nGenerating compression and texture ratio report...")
     create_compression_texture_ratio(models_data)
-    
     print("\nGenerating glTF vs GLB comparison report...")
     create_gltf_glb_comparison(models_data)
-    
     print("\nGenerating per-format stats report...")
     create_per_format_stats(models_data)
-    
     print("\nGenerating model-format compression ratio chart...")
     create_model_format_compression_ratio_chart(models_data)
-    
+    print("\nGenerating all-format size before comparison report...")
+    create_all_format_size_before(models_data)
+    print("\nGenerating all-format size after comparison report...")
+    create_all_format_size_after(models_data)
     print("\nGenerating all-format size before/after comparison report...")
     create_all_format_size_before_after(models_data)
-    
     print("\nGenerating peak memory usage report...")
     create_peak_memory_usage(models_data)
-    
     print("\nGenerating summary report...")
     create_summary_report(models_data)
-    
     print("\nGenerating combined report...")
     create_combined_report(models_data)
-    
     print("\nAll reports generated! Please check the HTML files in the Charts directory.")
     print("Open Charts/index.html to view the summary report.")
 
