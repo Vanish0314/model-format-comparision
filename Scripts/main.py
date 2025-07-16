@@ -30,9 +30,20 @@ from report_generators import (
     create_combined_report
 )
 
+# 实际替换所有字段名
+# face_count_k → faceCountK
+# texture_count → textureCount
+# size_before_mb → sizeBeforeZipMB
+# size_after_mb → sizeAfterZipMB
+# peak_memory_mb → peakMemoryMB
+# texture_size_mb → textureSizeBeforeZipMB
+# texture_size_after_mb → textureSizeAfterZipMB
+# import_time_ms → importTimeMs
+# load_time_ms → loadTimeMs
+# load_memory_mb → loadPeakMemoryMB
+
+# 替换为新字段名
 def get_standardized_model_name(model_name, face_count_k, texture_count):
-    """Convert model name to standardized format: ModelName(face_countk/texture_count)"""
-    # Extract the base name (remove suffixes like _2832k_405tex)
     base_name = model_name.split('_')[0]
     return f"{base_name}({face_count_k}k/{texture_count})"
 
@@ -63,7 +74,7 @@ def create_import_time_comparison(models_data):
     valid_indices = []
     for idx, (model_name, model_data) in enumerate(models_data.items()):
         has_data = any(
-            fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]
+            fmt in model_data['formats'] and 'importTimeMs' in model_data['formats'][fmt]
             for fmt in formats
         )
         if has_data:
@@ -74,8 +85,8 @@ def create_import_time_comparison(models_data):
         for idx in valid_indices:
             model_name = list(models_data.keys())[idx]
             model_data = models_data[model_name]
-            if fmt in model_data['formats'] and 'import_time_ms' in model_data['formats'][fmt]:
-                data_by_format[fmt].append(model_data['formats'][fmt]['import_time_ms'] / 1000)
+            if fmt in model_data['formats'] and 'importTimeMs' in model_data['formats'][fmt]:
+                data_by_format[fmt].append(model_data['formats'][fmt]['importTimeMs'] / 1000)
             else:
                 data_by_format[fmt].append(None)
     # Filter out models where all bars are empty
@@ -127,7 +138,7 @@ def create_size_memory_comparison(models_data):
         for fmt in formats:
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                if any(fmt_data.get(k, None) not in [None, 0] for k in ['size_before_mb', 'size_after_mb', 'peak_memory_mb']):
+                if any(fmt_data.get(k, None) not in [None, 0] for k in ['sizeBeforeZipMB', 'sizeAfterZipMB', 'peakMemoryMB']):
                     has_data = True
         if has_data:
             models.append(model_name)
@@ -139,9 +150,9 @@ def create_size_memory_comparison(models_data):
             model_data = models_data[model_name]
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                size_before_data[fmt].append(fmt_data.get('size_before_mb', None))
-                size_after_data[fmt].append(fmt_data.get('size_after_mb', None))
-                memory_data[fmt].append(fmt_data.get('peak_memory_mb', None))
+                size_before_data[fmt].append(fmt_data.get('sizeBeforeZipMB', None))
+                size_after_data[fmt].append(fmt_data.get('sizeAfterZipMB', None))
+                memory_data[fmt].append(fmt_data.get('peakMemoryMB', None))
             else:
                 size_before_data[fmt].append(None)
                 size_after_data[fmt].append(None)
@@ -247,7 +258,7 @@ def create_compression_texture_ratio(models_data):
         for fmt in formats:
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                if fmt_data.get('size_before_mb', None) not in [None, 0] and fmt_data.get('size_after_mb', None) not in [None, 0]:
+                if fmt_data.get('sizeBeforeZipMB', None) not in [None, 0] and fmt_data.get('sizeAfterZipMB', None) not in [None, 0]:
                     has_data = True
         if has_data:
             models.append(model_name)
@@ -259,9 +270,9 @@ def create_compression_texture_ratio(models_data):
             model_data = models_data[model_name]
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                size_before = fmt_data.get('size_before_mb', None)
-                size_after = fmt_data.get('size_after_mb', None)
-                texture_size = fmt_data.get('texture_size_mb', None)
+                size_before = fmt_data.get('sizeBeforeZipMB', None)
+                size_after = fmt_data.get('sizeAfterZipMB', None)
+                texture_size = fmt_data.get('textureSizeBeforeZipMB', None)
                 # Calculate compression ratio
                 if size_before not in [None, 0] and size_after not in [None, 0]:
                     compression_ratio = (1 - size_after / size_before) * 100
@@ -346,7 +357,7 @@ def create_gltf_glb_comparison(models_data):
         for fmt in formats:
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                if fmt_data.get('load_time_ms', None) not in [None, 0] or fmt_data.get('load_memory_mb', None) not in [None, 0]:
+                if fmt_data.get('loadTimeMs', None) not in [None, 0] or fmt_data.get('loadPeakMemoryMB', None) not in [None, 0]:
                     has_data = True
         if has_data:
             models.append(model_name)
@@ -358,8 +369,8 @@ def create_gltf_glb_comparison(models_data):
             model_data = models_data[model_name]
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                load_time = fmt_data.get('load_time_ms', None)
-                load_memory = fmt_data.get('load_memory_mb', None)
+                load_time = fmt_data.get('loadTimeMs', None)
+                load_memory = fmt_data.get('loadPeakMemoryMB', None)
                 load_time_data[fmt].append(load_time / 1000 if load_time not in [None, 0] else None)
                 load_memory_data[fmt].append(load_memory if load_memory not in [None, 0] else None)
             else:
@@ -526,8 +537,8 @@ def create_model_format_compression_ratio_chart(models_data):
         for fmt in formats:
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                sb = fmt_data.get('size_before_mb', None)
-                sa = fmt_data.get('size_after_mb', None)
+                sb = fmt_data.get('sizeBeforeZipMB', None)
+                sa = fmt_data.get('sizeAfterZipMB', None)
                 if sb not in [None, 0] and sa not in [None, 0]:
                     ratio = (1 - sa / sb) * 100
                     data_by_format[fmt].append(ratio)
@@ -732,9 +743,9 @@ def create_per_format_stats(models_data):
         for model_name, model_data in models_data.items():
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                sb = fmt_data.get('size_before_mb', None)
-                sa = fmt_data.get('size_after_mb', None)
-                tc = fmt_data.get('texture_size_mb', None)
+                sb = fmt_data.get('sizeBeforeZipMB', None)
+                sa = fmt_data.get('sizeAfterZipMB', None)
+                tc = fmt_data.get('textureSizeBeforeZipMB', None)
                 cr = (1 - sa / sb) * 100 if sb not in [None, 0] and sa not in [None, 0] else None
                 tr = (tc / sb) * 100 if sb not in [None, 0] and tc not in [None, 0] else None
                 # 只要四项之一有数据就保留
@@ -802,14 +813,14 @@ def create_all_format_size_before(models_data):
     texture_counts = []
     data = {fmt: [] for fmt in formats}
     for model_name, model_data in models_data.items():
-        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('size_before_mb', None) not in [None, 0] for fmt in formats)
+        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('sizeBeforeZipMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
             texture_counts.append(model_data['texture_count'])
             for fmt in formats:
                 if fmt in model_data['formats']:
-                    v = model_data['formats'][fmt].get('size_before_mb', None)
+                    v = model_data['formats'][fmt].get('sizeBeforeZipMB', None)
                     data[fmt].append(v)
                 else:
                     data[fmt].append(None)
@@ -857,14 +868,14 @@ def create_all_format_size_after(models_data):
     texture_counts = []
     data = {fmt: [] for fmt in formats}
     for model_name, model_data in models_data.items():
-        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('size_after_mb', None) not in [None, 0] for fmt in formats)
+        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('sizeAfterZipMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
             texture_counts.append(model_data['texture_count'])
             for fmt in formats:
                 if fmt in model_data['formats']:
-                    v = model_data['formats'][fmt].get('size_after_mb', None)
+                    v = model_data['formats'][fmt].get('sizeAfterZipMB', None)
                     data[fmt].append(v)
                 else:
                     data[fmt].append(None)
@@ -1031,16 +1042,16 @@ def create_all_format_size_before_after(models_data):
     data_after = {fmt: [] for fmt in formats}
     for model_name, model_data in models_data.items():
         has_data = any(fmt in model_data['formats'] and (
-            model_data['formats'][fmt].get('size_before_mb', None) not in [None, 0] or
-            model_data['formats'][fmt].get('size_after_mb', None) not in [None, 0]) for fmt in formats)
+            model_data['formats'][fmt].get('sizeBeforeZipMB', None) not in [None, 0] or
+            model_data['formats'][fmt].get('sizeAfterZipMB', None) not in [None, 0]) for fmt in formats)
         if has_data:
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
             texture_counts.append(model_data['texture_count'])
             for fmt in formats:
                 if fmt in model_data['formats']:
-                    data_before[fmt].append(model_data['formats'][fmt].get('size_before_mb', None))
-                    data_after[fmt].append(model_data['formats'][fmt].get('size_after_mb', None))
+                    data_before[fmt].append(model_data['formats'][fmt].get('sizeBeforeZipMB', None))
+                    data_after[fmt].append(model_data['formats'][fmt].get('sizeAfterZipMB', None))
                 else:
                     data_before[fmt].append(None)
                     data_after[fmt].append(None)
@@ -1102,13 +1113,13 @@ def create_peak_memory_usage(models_data):
     face_counts = []
     memory_data = {fmt: [] for fmt in formats}
     for model_name, model_data in models_data.items():
-        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('peak_memory_mb', None) not in [None, 0] for fmt in formats)
+        has_data = any(fmt in model_data['formats'] and model_data['formats'][fmt].get('peakMemoryMB', None) not in [None, 0] for fmt in formats)
         if has_data:
             models.append(model_name)
             face_counts.append(model_data['face_count_k'])
             for fmt in formats:
                 if fmt in model_data['formats']:
-                    memory_data[fmt].append(model_data['formats'][fmt].get('peak_memory_mb', None))
+                    memory_data[fmt].append(model_data['formats'][fmt].get('peakMemoryMB', None))
                 else:
                     memory_data[fmt].append(None)
     # 剔除全为None/0的格式
@@ -1163,9 +1174,9 @@ def create_per_format_stats(models_data):
         for model_name, model_data in models_data.items():
             if fmt in model_data['formats']:
                 fmt_data = model_data['formats'][fmt]
-                sb = fmt_data.get('size_before_mb', None)
-                sa = fmt_data.get('size_after_mb', None)
-                tc = fmt_data.get('texture_size_mb', None)
+                sb = fmt_data.get('sizeBeforeZipMB', None)
+                sa = fmt_data.get('sizeAfterZipMB', None)
+                tc = fmt_data.get('textureSizeBeforeZipMB', None)
                 cr = (1 - sa / sb) * 100 if sb not in [None, 0] and sa not in [None, 0] else None
                 tr = (tc / sb) * 100 if sb not in [None, 0] and tc not in [None, 0] else None
                 if any(x not in [None, 0] for x in [sb, sa, cr, tr]):
