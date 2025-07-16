@@ -8,6 +8,7 @@ import io
 import base64
 import matplotlib.image as mpimg
 from matplotlib.figure import Figure
+import glob
 
 # Set font to avoid unicode minus issues
 matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans']
@@ -75,9 +76,9 @@ def create_import_time_comparison(models_data):
     models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
         data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     x = np.arange(len(models))
-    width = 0.2
+    width = 0.12
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_by_format[fmt] if v is not None and v > 0]
@@ -87,11 +88,11 @@ def create_import_time_comparison(models_data):
         values = data_by_format[fmt]
         bar_vals = [v if v is not None and v > 0 else 0 for v in values]
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
-        for j, (bar, v) in enumerate(zip(bars, values)):
+        for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} s', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} s', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel = 'Import Time (seconds, log scale)' if use_log else 'Import Time (seconds, linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
@@ -146,9 +147,9 @@ def create_size_memory_comparison(models_data):
         size_after_data[fmt] = [size_after_data[fmt][i] for i in keep_indices]
         memory_data[fmt] = [memory_data[fmt][i] for i in keep_indices]
 
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 16))
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(max(24, len(models)*1.2), 16))
     x = np.arange(len(models))
-    width = 0.2
+    width = 0.12
     # 1. Size before compression
     all_values1 = []
     for fmt in formats:
@@ -161,9 +162,9 @@ def create_size_memory_comparison(models_data):
         bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ylabel1 = 'Size (MB, log scale)' if use_log1 else 'Size (MB, linear scale)'
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('File Size Before Compression', fontsize=14, fontweight='bold')
@@ -185,9 +186,9 @@ def create_size_memory_comparison(models_data):
         bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ylabel2 = 'Size (MB, log scale)' if use_log2 else 'Size (MB, linear scale)'
     ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('File Size After Compression', fontsize=14, fontweight='bold')
@@ -209,9 +210,9 @@ def create_size_memory_comparison(models_data):
         bars = ax3.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax3.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax3.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v is not None and v > 0:
-                ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax3.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f} MB', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax3.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel3 = 'Memory (MB, log scale)' if use_log3 else 'Memory (MB, linear scale)'
     ax3.set_ylabel(ylabel3, fontsize=12)
@@ -276,9 +277,9 @@ def create_compression_texture_ratio(models_data):
         compression_ratio_data[fmt] = [compression_ratio_data[fmt][i] for i in keep_indices]
         texture_ratio_data[fmt] = [texture_ratio_data[fmt][i] for i in keep_indices]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(max(24, len(models)*1.2), 12))
     x = np.arange(len(models))
-    width = 0.2
+    width = 0.12
     # Figure 1: Compression ratio comparison
     all_values1 = []
     for fmt in formats:
@@ -291,9 +292,9 @@ def create_compression_texture_ratio(models_data):
         bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ylabel1 = 'Compression Ratio (%) (log scale)' if use_log1 else 'Compression Ratio (%) (linear scale)'
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('Compression Ratio Comparison', fontsize=14, fontweight='bold')
@@ -316,9 +317,9 @@ def create_compression_texture_ratio(models_data):
         bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax2.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel2 = 'Texture Size Ratio (%) (log scale)' if use_log2 else 'Texture Size Ratio (%) (linear scale)'
     ax2.set_ylabel(ylabel2, fontsize=12)
@@ -373,9 +374,9 @@ def create_gltf_glb_comparison(models_data):
         load_time_data[fmt] = [load_time_data[fmt][i] for i in keep_indices]
         load_memory_data[fmt] = [load_memory_data[fmt][i] for i in keep_indices]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(max(24, len(models)*1.2), 8))
     x = np.arange(len(models))
-    width = 0.35
+    width = 0.12
     # Figure 1: Load time comparison
     all_values1 = []
     for fmt in formats:
@@ -545,9 +546,9 @@ def create_model_format_compression_ratio_chart(models_data):
     models, face_counts, _, keep_indices = filter_models_by_nonempty(models_data, data_by_format, models, face_counts)
     for fmt in formats:
         data_by_format[fmt] = [data_by_format[fmt][i] for i in keep_indices]
-    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     x = np.arange(len(models))
-    width = 0.18
+    width = 0.12
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_by_format[fmt] if v is not None]
@@ -559,9 +560,9 @@ def create_model_format_compression_ratio_chart(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             else:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} %', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} %', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax.set_xlabel('Model (Face Count)', fontsize=12)
     ylabel = 'Compression Ratio (%) (log scale)' if use_log else 'Compression Ratio (%) (linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
@@ -759,35 +760,42 @@ def create_per_format_stats(models_data):
         texture_ratio = [texture_ratio[i] for i in keep_indices]
 
         x = np.arange(len(models))
-        width = 0.18
-        fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
-        all_values = []
-        for arr in [size_before, size_after, compression_ratio, texture_ratio]:
-            all_values += [v for v in arr if v not in [None, 0]]
-        use_log = should_use_log_scale(all_values)
-        bars1 = ax.bar(x - 1.5*width, [v if v not in [None, 0] else 0 for v in size_before], width, label='Size Before (MB)', zorder=2)
-        bars2 = ax.bar(x - 0.5*width, [v if v not in [None, 0] else 0 for v in size_after], width, label='Size After (MB)', zorder=2)
-        bars3 = ax.bar(x + 0.5*width, [v if v not in [None, 0] else 0 for v in compression_ratio], width, label='Compression Ratio (%)', zorder=2)
-        bars4 = ax.bar(x + 1.5*width, [v if v not in [None, 0] else 0 for v in texture_ratio], width, label='Texture Ratio (%)', zorder=2)
-        for bars, values, unit in zip([bars1, bars2, bars3, bars4], [size_before, size_after, compression_ratio, texture_ratio], ['MB', 'MB', '%', '%']):
+        width = 0.12
+        fig, ax1 = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
+        # MB类数据主y轴，%类数据副y轴
+        all_mb = [v for v in size_before+size_after if v not in [None, 0]]
+        all_pct = [v for v in compression_ratio+texture_ratio if v not in [None, 0]]
+        use_log_mb = should_use_log_scale(all_mb)
+        use_log_pct = should_use_log_scale(all_pct)
+        bars1 = ax1.bar(x - width, [v if v not in [None, 0] else 0 for v in size_before], width, label='Size Before (MB)', color='#1f77b4', zorder=2)
+        bars2 = ax1.bar(x, [v if v not in [None, 0] else 0 for v in size_after], width, label='Size After (MB)', color='#aec7e8', zorder=2)
+        ax2 = ax1.twinx()
+        bars3 = ax2.bar(x + width, [v if v not in [None, 0] else 0 for v in compression_ratio], width, label='Compression Ratio (%)', color='#ff7f0e', zorder=2, alpha=0.7)
+        bars4 = ax2.bar(x + 2*width, [v if v not in [None, 0] else 0 for v in texture_ratio], width, label='Texture Ratio (%)', color='#ffbb78', zorder=2, alpha=0.7)
+        for bars, values, unit, axx in zip([bars1, bars2, bars3, bars4], [size_before, size_after, compression_ratio, texture_ratio], ['MB', 'MB', '%', '%'], [ax1, ax1, ax2, ax2]):
             for bar, v in zip(bars, values):
                 if v is None:
-                    ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                    axx.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
                 elif v not in [None, 0]:
-                    ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} {unit}', ha='center', va='bottom', fontsize=8, zorder=3)
-        ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
-        ylabel = 'Value (log scale)' if use_log else 'Value (linear scale)'
-        ax.set_ylabel(ylabel, fontsize=12)
-        ax.set_title(f'{fmt.upper()} Stats', fontsize=16, fontweight='bold')
-        ax.set_xticks(x)
+                    axx.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} {unit}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
+        ax1.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
+        ylabel1 = 'File Size (MB, log scale)' if use_log_mb else 'File Size (MB, linear scale)'
+        ax1.set_ylabel(ylabel1, fontsize=12)
+        ylabel2 = 'Ratio (%) (log scale)' if use_log_pct else 'Ratio (%) (linear scale)'
+        ax2.set_ylabel(ylabel2, fontsize=12)
+        ax1.set_title(f'{fmt.upper()} Stats', fontsize=16, fontweight='bold')
+        ax1.set_xticks(x)
         labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
-        ax.set_xticklabels(labels, rotation=45, ha='right')
-        ax.legend()
-        ax.grid(True, alpha=0.3, which='both', zorder=1)
-        if use_log:
-            ax.set_yscale('log')
+        ax1.set_xticklabels(labels, rotation=45, ha='right')
+        ax1.legend(loc='upper left')
+        ax2.legend(loc='upper right')
+        ax1.grid(True, alpha=0.3, which='both', zorder=1)
+        if use_log_mb:
+            ax1.set_yscale('log')
+        if use_log_pct:
+            ax2.set_yscale('log')
         plt.tight_layout()
-        save_plot_as_html(fig, f'Charts/per_format_{fmt}.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for each model (log/linear scale, missing data marked)')
+        save_plot_as_html(fig, f'Charts/{fmt}_stats.html', f'{fmt.upper()} Stats', f'Size before/after compression, compression ratio, and texture ratio for {fmt} (log/linear scale, missing data marked)')
 
 # New: Horizontal axis is model, bars are size before compression for all formats
 def create_all_format_size_before(models_data):
@@ -814,8 +822,8 @@ def create_all_format_size_before(models_data):
         data[fmt] = [data[fmt][i] for i in keep_indices]
 
     x = np.arange(len(models))
-    width = 0.18
-    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    width = 0.12
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     all_values = []
     for fmt in formats:
         all_values += [v for v in data[fmt] if v not in [None, 0]]
@@ -827,9 +835,9 @@ def create_all_format_size_before(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
     ylabel = 'Size Before Compression (MB, log scale)' if use_log else 'Size Before Compression (MB, linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
@@ -869,8 +877,8 @@ def create_all_format_size_after(models_data):
         data[fmt] = [data[fmt][i] for i in keep_indices]
 
     x = np.arange(len(models))
-    width = 0.18
-    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    width = 0.12
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     all_values = []
     for fmt in formats:
         all_values += [v for v in data[fmt] if v not in [None, 0]]
@@ -882,9 +890,9 @@ def create_all_format_size_after(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     ax.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
     ylabel = 'Size After Compression (MB, log scale)' if use_log else 'Size After Compression (MB, linear scale)'
     ax.set_ylabel(ylabel, fontsize=12)
@@ -910,241 +918,110 @@ def should_use_log_scale(values):
     return max_v / min_v >= 100
 
 def create_combined_report(models_data):
-    """生成六个表格合并的综合报告"""
-    def fig_to_base64(fig):
-        buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=150, bbox_inches='tight')
-        buf.seek(0)
-        img_b64 = base64.b64encode(buf.getvalue()).decode()
-        plt.close(fig)
-        return img_b64
-
-    # 确保 Charts 目录存在
-    os.makedirs('Charts', exist_ok=True)
-    
+    """生成合并后的综合报告，直接嵌入图片，不用iframe，不显示summary和导航，不显示Per-Format Statistics。"""
     # 生成所有需要的图表
     print("Generating individual charts for combined report...")
-    
-    # 1. 生成 Per-Format Statistics
     create_per_format_stats(models_data)
-    
-    # 2. 生成 All-Format Size Before/After
     create_all_format_size_before_after(models_data)
-    
-    # 3. 生成 Peak Memory Usage
     create_peak_memory_usage(models_data)
-    
-    # 4. 生成 Import Time Comparison
     create_import_time_comparison(models_data)
-    
-    # 5. 生成 Compression and Texture Ratio
     create_compression_texture_ratio(models_data)
-    
-    # 6. 生成 Model-Format Compression Ratio
     create_model_format_compression_ratio_chart(models_data)
-    
-    # 创建综合报告 HTML
-    html_content = """
+
+    # 图表文件名及标题
+    chart_files = [
+        ("Charts/all_format_size_before_after.png", "All-Format Size Before/After Compression"),
+        ("Charts/model_format_compression_ratio.png", "Model-Format Compression Ratio"),
+        ("Charts/compression_texture_ratio.png", "Compression Ratio and Texture Size Analysis"),
+        ("Charts/size_memory_comparison.png", "File Size and Memory Usage Comparison"),
+        ("Charts/peak_memory_usage.png", "Peak Memory Usage"),
+        ("Charts/import_time_comparison.png", "Import Time Comparison"),
+    ]
+    # 直接嵌入图片
+    chart_imgs = ""
+    for file, title in chart_files:
+        if not os.path.exists(file):
+            continue
+        with open(file, "rb") as f:
+            img_b64 = base64.b64encode(f.read()).decode()
+        chart_imgs += f'''
+        <div class="section">
+            <h2>{title}</h2>
+            <div class="chart-container">
+                <img src="data:image/png;base64,{img_b64}" alt="{title}" style="width:100%;height:auto;">
+            </div>
+        </div>
+        '''
+
+    html_content = f"""
 <!DOCTYPE html>
-<html lang="en">
+<html lang=\"en\">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
     <title>Combined Model Format Analysis Report</title>
     <style>
-        body {
+        body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f5f5f5;
             color: #333;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        }}
+        .container {{
+            width: 100vw;
+            max-width: none;
+            margin: 0;
             background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
+            padding: 0 0 30px 0;
+            border-radius: 0;
+            box-shadow: none;
+        }}
+        h1 {{
             text-align: center;
             color: #2c3e50;
             margin-bottom: 30px;
             font-size: 2.5em;
             border-bottom: 3px solid #3498db;
             padding-bottom: 15px;
-        }
-        .section {
-            margin-bottom: 40px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+        }}
+        .section {{
+            margin: 0 0 40px 0;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 0;
             background-color: #fafafa;
-        }
-        .section h2 {
+        }}
+        .section h2 {{
             color: #34495e;
             margin-top: 0;
             font-size: 1.8em;
             border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
-        }
-        .section p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        .chart-container {
+        }}
+        .chart-container {{
             text-align: center;
             margin: 20px 0;
-        }
-        .chart-container iframe {
+        }}
+        img {{
             width: 100%;
-            height: 600px;
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .nav-links {
-            text-align: center;
-            margin: 30px 0;
-            padding: 20px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-        }
-        .nav-links a {
-            display: inline-block;
-            margin: 0 15px;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
+            height: auto;
+            border: 1px solid #ddd;
             border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .nav-links a:hover {
-            background-color: #2980b9;
-        }
-        .summary {
-            background-color: #e8f4fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        .summary h3 {
-            color: #2c3e50;
-            margin-top: 0;
-        }
-        .summary ul {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        .summary li {
-            margin: 5px 0;
-            color: #555;
-        }
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }}
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class=\"container\">
         <h1>Combined Model Format Analysis Report</h1>
-        
-        <div class="summary">
-            <h3>Report Summary</h3>
-            <p>This comprehensive report provides detailed analysis of 3D model performance across different file formats (FBX, OBJ, glTF, GLB). The analysis includes:</p>
-            <ul>
-                <li><strong>Per-Format Statistics:</strong> Detailed metrics for each format including file sizes, compression ratios, and texture proportions</li>
-                <li><strong>All-Format Size Comparison:</strong> Before and after compression file sizes across all formats</li>
-                <li><strong>Model-Format Compression Ratio:</strong> Compression efficiency analysis for each model-format combination</li>
-                <li><strong>Compression Ratio and Texture Size Analysis:</strong> Detailed breakdown of compression performance and texture impact</li>
-                <li><strong>File Size and Memory Usage Comparison:</strong> Comprehensive comparison of file sizes and memory consumption</li>
-                <li><strong>Import Time Analysis:</strong> Performance comparison of import times across formats</li>
-            </ul>
-        </div>
-
-        <div class="nav-links">
-            <a href="index.html">Back to Main Report</a>
-            <a href="summary_report.html">Summary Report</a>
-        </div>
-
-        <div class="section">
-            <h2>1. Per-Format Statistics</h2>
-            <p>Detailed statistics for each file format showing file sizes, compression ratios, and texture proportions.</p>
-            <div class="chart-container">
-                <iframe src="fbx_stats.html"></iframe>
-            </div>
-            <div class="chart-container">
-                <iframe src="obj_stats.html"></iframe>
-            </div>
-            <div class="chart-container">
-                <iframe src="glTF_stats.html"></iframe>
-            </div>
-            <div class="chart-container">
-                <iframe src="glb_stats.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>2. All-Format Size Before/After Compression</h2>
-            <p>Comparison of file sizes before and after compression across all formats for each model.</p>
-            <div class="chart-container">
-                <iframe src="all_format_size_before_after.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>3. Model-Format Compression Ratio</h2>
-            <p>Compression ratio analysis showing the efficiency of each format for different models.</p>
-            <div class="chart-container">
-                <iframe src="model_format_compression_ratio.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>4. Compression Ratio and Texture Size Analysis</h2>
-            <p>Detailed analysis of compression ratios and texture size proportions across formats.</p>
-            <div class="chart-container">
-                <iframe src="compression_texture_ratio.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>5. File Size and Memory Usage Comparison</h2>
-            <p>Comprehensive comparison of file sizes and peak memory usage across all formats.</p>
-            <div class="chart-container">
-                <iframe src="size_memory_comparison.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>6. Peak Memory Usage</h2>
-            <p>Analysis of peak memory consumption for each model and format combination.</p>
-            <div class="chart-container">
-                <iframe src="peak_memory_usage.html"></iframe>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>7. Import Time Comparison</h2>
-            <p>Performance comparison of import times across different file formats.</p>
-            <div class="chart-container">
-                <iframe src="import_time_comparison.html"></iframe>
-            </div>
-        </div>
-
-        <div class="nav-links">
-            <a href="index.html">Back to Main Report</a>
-            <a href="summary_report.html">Summary Report</a>
-        </div>
+        {chart_imgs}
     </div>
 </body>
 </html>
     """
-    
-    # 保存综合报告
     with open('Charts/combined_report.html', 'w', encoding='utf-8') as f:
         f.write(html_content)
-    
     print("Combined report generated: Charts/combined_report.html")
 
 def create_all_format_size_before_after(models_data):
@@ -1176,8 +1053,8 @@ def create_all_format_size_before_after(models_data):
         data_before[fmt] = [data_before[fmt][i] for i in keep_indices]
         data_after[fmt] = [data_after[fmt][i] for i in keep_indices]
     x = np.arange(len(models))
-    width = 0.18
-    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    width = 0.12
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     # 色系定义
     base_colors = plt.get_cmap('tab10').colors
     for i, fmt in enumerate(formats):
@@ -1191,14 +1068,14 @@ def create_all_format_size_before_after(models_data):
         bars2 = ax.bar(x + offset + width, after_vals, width, label=f'{fmt} After', color=color_after, zorder=2)
         for bar, v in zip(bars1, data_before[fmt]):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
         for bar, v in zip(bars2, data_after[fmt]):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     all_values = []
     for fmt in formats:
         all_values += [v for v in data_before[fmt] if v not in [None, 0]]
@@ -1242,7 +1119,7 @@ def create_peak_memory_usage(models_data):
     memory_data = {fmt: memory_data[fmt] for fmt in valid_formats}
     x = np.arange(len(models))
     width = 0.8 / len(valid_formats) if valid_formats else 0.2
-    fig, ax = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
     base_colors = plt.get_cmap('tab10').colors
     for i, fmt in enumerate(valid_formats):
         offset = (i - (len(valid_formats)-1)/2) * width
@@ -1251,9 +1128,9 @@ def create_peak_memory_usage(models_data):
         bars = ax.bar(x + offset, bar_vals, width, label=fmt, color=base_colors[i], zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v not in [None, 0]:
-                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}', ha='center', va='bottom', fontsize=8, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.0f}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
     all_values = []
     for fmt in valid_formats:
         all_values += [v for v in memory_data[fmt] if v not in [None, 0]]
@@ -1311,8 +1188,8 @@ def create_per_format_stats(models_data):
         compression_ratio = [compression_ratio[i] for i in keep_indices]
         texture_ratio = [texture_ratio[i] for i in keep_indices]
         x = np.arange(len(models))
-        width = 0.18
-        fig, ax1 = plt.subplots(figsize=(max(10, len(models)*0.7), 8))
+        width = 0.12
+        fig, ax1 = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
         # MB类数据主y轴，%类数据副y轴
         all_mb = [v for v in size_before+size_after if v not in [None, 0]]
         all_pct = [v for v in compression_ratio+texture_ratio if v not in [None, 0]]
@@ -1326,9 +1203,9 @@ def create_per_format_stats(models_data):
         for bars, values, unit, axx in zip([bars1, bars2, bars3, bars4], [size_before, size_after, compression_ratio, texture_ratio], ['MB', 'MB', '%', '%'], [ax1, ax1, ax2, ax2]):
             for bar, v in zip(bars, values):
                 if v is None:
-                    axx.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=8, color='red', rotation=90, zorder=3)
+                    axx.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
                 elif v not in [None, 0]:
-                    axx.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} {unit}', ha='center', va='bottom', fontsize=8, zorder=3)
+                    axx.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f} {unit}', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
         ax1.set_xlabel('Model (Face Count/Texture Count)', fontsize=12)
         ylabel1 = 'File Size (MB, log scale)' if use_log_mb else 'File Size (MB, linear scale)'
         ax1.set_ylabel(ylabel1, fontsize=12)
