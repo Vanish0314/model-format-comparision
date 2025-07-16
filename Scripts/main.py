@@ -30,6 +30,12 @@ from report_generators import (
     create_combined_report
 )
 
+def get_standardized_model_name(model_name, face_count_k, texture_count):
+    """Convert model name to standardized format: ModelName(face_countk/texture_count)"""
+    # Extract the base name (remove suffixes like _2832k_405tex)
+    base_name = model_name.split('_')[0]
+    return f"{base_name}({face_count_k}k/{texture_count})"
+
 def filter_models_by_nonempty(models_data, data_by_format, models, face_counts):
     """
     Filters out models where all values for a given format are empty (None or 0).
@@ -98,7 +104,7 @@ def create_import_time_comparison(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Import Time Comparison: FBX vs OBJ vs glTF vs GLB', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -169,7 +175,7 @@ def create_size_memory_comparison(models_data):
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('File Size Before Compression', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
+    ax1.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log1:
@@ -193,7 +199,7 @@ def create_size_memory_comparison(models_data):
     ax2.set_ylabel(ylabel2, fontsize=12)
     ax2.set_title('File Size After Compression', fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
-    ax2.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
+    ax2.set_xticklabels([get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)], rotation=45, ha='right')
     ax2.legend()
     ax2.grid(True, alpha=0.3, which='both', zorder=1)
     if use_log2:
@@ -218,7 +224,7 @@ def create_size_memory_comparison(models_data):
     ax3.set_ylabel(ylabel3, fontsize=12)
     ax3.set_title('Peak Memory Usage', fontsize=14, fontweight='bold')
     ax3.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax3.set_xticklabels(labels, rotation=45, ha='right')
     ax3.legend()
     ax3.grid(True, alpha=0.3, which='both', zorder=1)
@@ -228,7 +234,7 @@ def create_size_memory_comparison(models_data):
     save_plot_as_html(fig, 'Charts/size_memory_comparison.html', 'File Size and Memory Usage Comparison', 'Comparison of file sizes (before/after compression) and peak memory usage (log/linear scale, missing data marked)')
 
 def create_compression_texture_ratio(models_data):
-    """Create compression ratio and texture size proportion chart (log scale + missing annotation)"""
+    """Create combined compression ratio and texture size proportion chart (log scale + missing annotation)"""
     models = []
     formats = ['fbx', 'obj', 'glTF', 'glb']
     compression_ratio_data = {fmt: [] for fmt in formats}
@@ -262,8 +268,8 @@ def create_compression_texture_ratio(models_data):
                 else:
                     compression_ratio = None
                 compression_ratio_data[fmt].append(compression_ratio)
-                # Calculate texture ratio
-                if size_before not in [None, 0] and texture_size not in [None, 0]:
+                # Calculate texture ratio - only treat as missing when texture_size is None or field doesn't exist
+                if size_before not in [None, 0] and texture_size is not None:
                     texture_ratio = (texture_size / size_before) * 100
                 else:
                     texture_ratio = None
@@ -277,61 +283,52 @@ def create_compression_texture_ratio(models_data):
         compression_ratio_data[fmt] = [compression_ratio_data[fmt][i] for i in keep_indices]
         texture_ratio_data[fmt] = [texture_ratio_data[fmt][i] for i in keep_indices]
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(max(24, len(models)*1.2), 12))
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 12))
     x = np.arange(len(models))
     width = 0.12
-    # Figure 1: Compression ratio comparison
-    all_values1 = []
+    # Combined chart with compression ratio and texture size proportion
+    all_values = []
     for fmt in formats:
-        all_values1 += [v for v in compression_ratio_data[fmt] if v is not None and v > 0]
-    use_log1 = should_use_log_scale(all_values1)
+        all_values += [v for v in compression_ratio_data[fmt] if v is not None and v > 0]
+        all_values += [v for v in texture_ratio_data[fmt] if v is not None and v > 0]
+    use_log = should_use_log_scale(all_values)
+    
+    # Plot compression ratio bars
     for i, fmt in enumerate(formats):
         offset = (i - len(formats)/2 + 0.5) * width
         values = compression_ratio_data[fmt]
         bar_vals = [v if v is not None and v > 0 else 0 for v in values]
-        bars = ax1.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
+        bars = ax.bar(x + offset, bar_vals, width, label=f'{fmt} Compression', zorder=2)
         for bar, v in zip(bars, values):
             if v is None:
-                ax1.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax1.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
-    ylabel1 = 'Compression Ratio (%) (log scale)' if use_log1 else 'Compression Ratio (%) (linear scale)'
-    ax1.set_ylabel(ylabel1, fontsize=12)
-    ax1.set_title('Compression Ratio Comparison', fontsize=14, fontweight='bold')
-    ax1.set_xticks(x)
-    ax1.set_xticklabels([model.split('_')[0] for model in models], rotation=45, ha='right')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3, which='both', zorder=1)
-    if use_log1:
-        ax1.set_yscale('log')
-    ax1.set_ylim(bottom=0.1)
-    # Figure 2: Texture size proportion comparison
-    all_values2 = []
-    for fmt in formats:
-        all_values2 += [v for v in texture_ratio_data[fmt] if v is not None and v > 0]
-    use_log2 = should_use_log_scale(all_values2)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
+    
+    # Plot texture ratio bars with different pattern
     for i, fmt in enumerate(formats):
-        offset = (i - len(formats)/2 + 0.5) * width
+        offset = (i - len(formats)/2 + 0.5) * width + width * 2
         values = texture_ratio_data[fmt]
         bar_vals = [v if v is not None and v > 0 else 0 for v in values]
-        bars = ax2.bar(x + offset, bar_vals, width, label=fmt, zorder=2)
+        bars = ax.bar(x + offset, bar_vals, width, label=f'{fmt} Texture', zorder=2, alpha=0.7)
         for bar, v in zip(bars, values):
             if v is None:
-                ax2.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
+                ax.text(bar.get_x() + bar.get_width()/2., 0.5, 'Missing', ha='center', va='bottom', fontsize=7, color='red', rotation=60, zorder=3)
             elif v > 0:
-                ax2.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
-    ax2.set_xlabel('Model (Face Count)', fontsize=12)
-    ylabel2 = 'Texture Size Ratio (%) (log scale)' if use_log2 else 'Texture Size Ratio (%) (linear scale)'
-    ax2.set_ylabel(ylabel2, fontsize=12)
-    ax2.set_title('Texture Size as Percentage of Total File Size', fontsize=14, fontweight='bold')
-    ax2.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
-    ax2.set_xticklabels(labels, rotation=45, ha='right')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3, which='both', zorder=1)
-    if use_log2:
-        ax2.set_yscale('log')
-    ax2.set_ylim(bottom=0.1)
+                ax.text(bar.get_x() + bar.get_width()/2., bar.get_height(), f'{v:.1f}%', ha='center', va='bottom', fontsize=7, rotation=60, zorder=3)
+    
+    ylabel = 'Ratio (%) (log scale)' if use_log else 'Ratio (%) (linear scale)'
+    ax.set_ylabel(ylabel, fontsize=12)
+    ax.set_xlabel('Model (Face Count)', fontsize=12)
+    ax.set_title('Compression Ratio and Texture Size Analysis', fontsize=16, fontweight='bold')
+    ax.set_xticks(x + width)
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
+    ax.set_xticklabels(labels, rotation=45, ha='right')
+    ax.legend()
+    ax.grid(True, alpha=0.3, which='both', zorder=1)
+    if use_log:
+        ax.set_yscale('log')
+    ax.set_ylim(bottom=0.1)
     plt.tight_layout()
     save_plot_as_html(fig, 'Charts/compression_texture_ratio.html', 'Compression Ratio and Texture Size Analysis', 'Analysis of compression efficiency and texture size proportion (log scale, missing data marked)')
 
@@ -397,7 +394,7 @@ def create_gltf_glb_comparison(models_data):
     ax1.set_ylabel(ylabel1, fontsize=12)
     ax1.set_title('glTF vs GLB: Load Time Comparison', fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k)' for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax1.set_xticklabels(labels, rotation=45, ha='right')
     ax1.legend()
     ax1.grid(True, alpha=0.3, which='both', zorder=1)
@@ -568,7 +565,7 @@ def create_model_format_compression_ratio_chart(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Compression Ratio by Model and Format', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -843,7 +840,7 @@ def create_all_format_size_before(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Size Before Compression Comparison Across Formats', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
+    labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -898,7 +895,7 @@ def create_all_format_size_after(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Size After Compression Comparison Across Formats', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
+    labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -1086,7 +1083,7 @@ def create_all_format_size_before_after(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Size Before/After Compression Comparison Across Formats', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{m.split("_")[0]}\n({f}k/{t})' for m, f, t in zip(models, face_counts, texture_counts)]
+    labels = [get_standardized_model_name(m, f, t) for m, f, t in zip(models, face_counts, texture_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
@@ -1119,7 +1116,7 @@ def create_peak_memory_usage(models_data):
     memory_data = {fmt: memory_data[fmt] for fmt in valid_formats}
     x = np.arange(len(models))
     width = 0.8 / len(valid_formats) if valid_formats else 0.2
-    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 8))
+    fig, ax = plt.subplots(figsize=(max(24, len(models)*1.2), 12))
     base_colors = plt.get_cmap('tab10').colors
     for i, fmt in enumerate(valid_formats):
         offset = (i - (len(valid_formats)-1)/2) * width
@@ -1140,7 +1137,7 @@ def create_peak_memory_usage(models_data):
     ax.set_ylabel(ylabel, fontsize=12)
     ax.set_title('Peak Memory Usage', fontsize=16, fontweight='bold')
     ax.set_xticks(x)
-    labels = [f'{model.split("_")[0]}\n({face}k faces)' for model, face in zip(models, face_counts)]
+    labels = [get_standardized_model_name(model, face, models_data[model]["texture_count"]) for model, face in zip(models, face_counts)]
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend()
     ax.grid(True, alpha=0.3, which='both', zorder=1)
