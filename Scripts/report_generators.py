@@ -15,7 +15,7 @@ def filter_models_by_nonempty(models_data: Dict[str, Any], data_by_format: Dict[
                     break
         if has_data:
             keep_indices.append(i)
-    return [models[i] for i in keep_indices], [face_counts[i] for i in keep_indices], [model_data['texture_count'] for i, model_name in enumerate(models) if i in keep_indices], keep_indices
+    return [models[i] for i in keep_indices], [face_counts[i] for i in keep_indices], [model_data['textureCount'] for i, model_name in enumerate(models) if i in keep_indices], keep_indices
 
 # 下面以 create_import_time_comparison 为例，其他 create_ 开头函数可依次迁移
 
@@ -32,7 +32,7 @@ def create_import_time_comparison(models_data: Dict[str, Any]):
         )
         if has_data:
             models.append(model_name)
-            face_counts.append(model_data['face_count_k'])
+            face_counts.append(model_data['faceCountK'])
             valid_indices.append(idx)
     for fmt in formats:
         for idx in valid_indices:
